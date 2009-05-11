@@ -4,10 +4,10 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Hello World, TimesheetActivity"
-    />
+    <ListView  
+        android:id="@+id/task_list"
+        android:layout_width="fill_parent" 
+        android:layout_height="fill_parent" 
+        />
 </LinearLayout>
 
