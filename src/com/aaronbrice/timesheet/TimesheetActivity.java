@@ -20,8 +20,9 @@ public class TimesheetActivity extends Activity
     TimesheetDatabase m_db;
     Cursor m_task_cursor;
 
-    public static final int ADD_TASK_MENU_ITEM    = Menu.FIRST;
-    public static final int DELETE_TASK_MENU_ITEM = Menu.FIRST + 1;
+    public static final int ADD_TASK_MENU_ITEM     = Menu.FIRST;
+    public static final int DELETE_TASK_MENU_ITEM  = Menu.FIRST + 1;
+    public static final int LIST_ENTRIES_MENU_ITEM = Menu.FIRST + 2;
 
     private static final int ACTIVITY_CREATE = 0;
 
@@ -51,6 +52,7 @@ public class TimesheetActivity extends Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
         menu.add(Menu.NONE, ADD_TASK_MENU_ITEM, Menu.NONE, "Add Task");
+        menu.add(Menu.NONE, LIST_ENTRIES_MENU_ITEM, Menu.NONE, "List Entries");
         return result;
     }
 
@@ -59,6 +61,9 @@ public class TimesheetActivity extends Activity
         switch (item.getItemId()) {
             case ADD_TASK_MENU_ITEM:
                 addTask();
+                return true;
+            case LIST_ENTRIES_MENU_ITEM:
+                listEntries();
                 return true;
         }
         return false;
@@ -82,10 +87,16 @@ public class TimesheetActivity extends Activity
         return false;
     }
 
-    public void addTask()
+    private void addTask()
     {
         Intent i = new Intent(this, TaskEditActivity.class);
         startActivityForResult(i, ACTIVITY_CREATE);
+    }
+
+    private void listEntries()
+    {
+        Intent i = new Intent(this, TimeEntriesActivity.class);
+        startActivity(i);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -100,4 +111,5 @@ public class TimesheetActivity extends Activity
                 break;
         }
     }
+
 }

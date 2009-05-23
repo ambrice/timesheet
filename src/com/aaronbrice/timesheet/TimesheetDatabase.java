@@ -8,9 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-/** 
- * Handles the Timesheet Database.
- */
 public class TimesheetDatabase extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "Timesheet";
     private static final int DATABASE_VERSION = 1;
@@ -72,6 +69,36 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
             getWritableDatabase().delete("tasks", "_id=?", new String[] {Long.toString(task_id)});
         } catch (SQLException e) {
             Log.e("Error deleting task", e.toString());
+        }
+    }
+
+    public Cursor getTimeEntries()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT time_entries._id, title, start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks WHERE tasks._id = time_entries.task_id ORDER BY start_time ASC", null);
+        c.moveToFirst();
+        return c;
+    }
+
+    public void newTimeEntry(long task_id, String start_time, String end_time)
+    {
+        ContentValues cv = new ContentValues();
+        cv.put("task_id", task_id);
+        cv.put("start_time", start_time);
+        cv.put("end_time", end_time);
+        try {
+            getWritableDatabase().insert("time_entries", null, cv);
+        } catch (SQLException e) {
+            Log.e("Error adding new time entry", e.toString());
+        }
+    }
+
+    public void deleteTimeEntry(long time_entry_id)
+    {
+        try {
+            getWritableDatabase().delete("time_entries", "_id=?", new String[] {Long.toString(time_entry_id)});
+        } catch (SQLException e) {
+            Log.e("Error deleting time entry", e.toString());
         }
     }
 }

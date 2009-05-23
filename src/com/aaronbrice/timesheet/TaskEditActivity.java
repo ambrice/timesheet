@@ -19,7 +19,7 @@ public class TaskEditActivity extends Activity {
 
         m_db = new TimesheetDatabase(this);
 
-        setContentView(R.layout.edit);
+        setContentView(R.layout.task_edit);
 
         final EditText title_edit = (EditText) findViewById(R.id.task_title);
         final CheckBox billable_edit = (CheckBox) findViewById(R.id.task_billable);
