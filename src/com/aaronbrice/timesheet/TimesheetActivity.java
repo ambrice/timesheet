@@ -3,22 +3,29 @@ package com.aaronbrice.timesheet;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.os.Bundle;
+
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.aaronbrice.timesheet.TimesheetDatabase;
 
-public class TimesheetActivity extends Activity
-{
+public class TimesheetActivity extends Activity {
     TimesheetDatabase m_db;
     Cursor m_task_cursor;
+    ListView m_task_list;
+    SimpleCursorAdapter m_ca;
 
     public static final int ADD_TASK_MENU_ITEM     = Menu.FIRST;
     public static final int DELETE_TASK_MENU_ITEM  = Menu.FIRST + 1;
@@ -27,8 +34,7 @@ public class TimesheetActivity extends Activity
     private static final int ACTIVITY_CREATE = 0;
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         m_db = new TimesheetDatabase(this);
@@ -36,16 +42,36 @@ public class TimesheetActivity extends Activity
         startManagingCursor(m_task_cursor);
 
         setContentView(R.layout.main);
-        ListView task_list = (ListView) findViewById(R.id.task_list);
-        SimpleCursorAdapter ca = new SimpleCursorAdapter(this,
+        m_task_list = (ListView) findViewById(R.id.task_list);
+        m_ca = new SimpleCursorAdapter(this,
                 android.R.layout.simple_list_item_single_choice, 
                 m_task_cursor,
                 new String[] {"title"},
                 new int[] {android.R.id.text1});
-        task_list.setAdapter(ca);
-        task_list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        registerForContextMenu(task_list);
+        m_ca.registerDataSetObserver(new DataSetObserver() {
+            public void onChanged() {
+                updateCheckedItem();
+            }
+        });
+
+        m_task_list.setAdapter(m_ca);
+        m_task_list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        registerForContextMenu(m_task_list);
+
+        m_task_list.setOnItemClickListener( new OnItemClickListener() { 
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                if (id == m_db.getCurrentTaskId()) {
+                    m_db.completeCurrentTask();
+                    m_task_list.clearChoices();
+                } else {
+                    m_db.changeTask(id);
+                }
+            }
+        });
+
+        updateCheckedItem();
     }
 
     @Override
@@ -87,20 +113,17 @@ public class TimesheetActivity extends Activity
         return false;
     }
 
-    private void addTask()
-    {
+    private void addTask() {
         Intent i = new Intent(this, TaskEditActivity.class);
         startActivityForResult(i, ACTIVITY_CREATE);
     }
 
-    private void listEntries()
-    {
+    private void listEntries() {
         Intent i = new Intent(this, TimeEntriesActivity.class);
         startActivity(i);
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch(requestCode) {
@@ -112,4 +135,17 @@ public class TimesheetActivity extends Activity
         }
     }
 
+    private void updateCheckedItem() {
+        long current_id = m_db.getCurrentTaskId();
+        if (current_id == 0) {
+            m_task_list.clearChoices();
+        } else {
+            int count = m_task_list.getCount();
+            for (int i=0; i < count; ++i) {
+                if (m_ca.getItemId(i) == current_id) {
+                    m_task_list.setItemChecked(i, true);
+                }
+            }
+        }
+    }
 }
