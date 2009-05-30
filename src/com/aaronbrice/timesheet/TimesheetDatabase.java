@@ -70,7 +70,22 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
 
     public Cursor getTimeEntries() {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT time_entries._id, title, start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks WHERE tasks._id = time_entries.task_id ORDER BY start_time ASC", null);
+        Cursor c = db.rawQuery(
+                "SELECT time_entries._id, title, strftime('%H:%M', start_time) AS start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_time ASC", 
+                new String[] {getSqlDate()}
+        );
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor getTimeEntries(int year, int month, int day) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT time_entries._id, title, strftime('%H:%M', start_time) AS start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_time ASC", 
+                new String[] {String.format("%04d-%02d-%02d", year, month, day)}
+        );
         c.moveToFirst();
         return c;
     }
@@ -138,6 +153,12 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         }
         c.moveToFirst();
         return c.getLong(0);
+    }
+
+    public static String getSqlDate() {
+        final Calendar c = Calendar.getInstance();
+        return String.format("%04d-%02d-%02d", 
+                c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
     }
 
     public static String getSqlTime() {
