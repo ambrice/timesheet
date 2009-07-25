@@ -25,10 +25,10 @@ import com.aaronbrice.timesheet.TimesheetDatabase;
 public class TimeEntriesActivity extends TabActivity
 {
     TimesheetDatabase m_db;
-    Cursor m_day_cursor;
+    Cursor m_day_cursor, m_week_cursor;
     TabHost m_tab_host;
-    SimpleCursorAdapter m_day_ca;
-    Button m_day_button;
+    SimpleCursorAdapter m_day_ca, m_week_ca;
+    Button m_day_button, m_week_button;
 
     public static final int ADD_TIME_ENTRY_MENU_ITEM    = Menu.FIRST;
     public static final int DELETE_TIME_ENTRY_MENU_ITEM = Menu.FIRST + 1;
@@ -36,6 +36,7 @@ public class TimeEntriesActivity extends TabActivity
     public static final int LIST_TASKS_MENU_ITEM        = Menu.FIRST + 3;
 
     private static final int SELECT_DAY_DIALOG_ID = 0;
+    private static final int SELECT_WEEK_DIALOG_ID = 1;
 
     private static final int ACTIVITY_CREATE = 0;
 
@@ -51,6 +52,18 @@ public class TimeEntriesActivity extends TabActivity
             }
         };
 
+    private DatePickerDialog.OnDateSetListener m_week_listener =
+        new DatePickerDialog.OnDateSetListener() {
+            public void onDateSet(DatePicker view, int year, int month, int week) {
+                m_week_cursor.close();
+                stopManagingCursor(m_week_cursor);
+                m_week_cursor = m_db.getWeekEntries(year, month + 1, week);
+                startManagingCursor(m_week_cursor);
+                m_week_ca.changeCursor(m_week_cursor);
+                m_week_button.setText(String.format("%04d-%02d-%02d", year, month + 1, week));
+            }
+        };
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -63,6 +76,13 @@ public class TimeEntriesActivity extends TabActivity
         m_tab_host.setCurrentTab(0);
 
         m_db = new TimesheetDatabase(this);
+
+        setupDayTab();
+        setupWeekTab();
+    }
+
+    protected void setupDayTab() 
+    {
         m_day_cursor = m_db.getTimeEntries();
         startManagingCursor(m_day_cursor);
 
@@ -88,6 +108,33 @@ public class TimeEntriesActivity extends TabActivity
         registerForContextMenu(time_entry_list);
     }
 
+    protected void setupWeekTab() 
+    {
+        m_week_cursor = m_db.getWeekEntries();
+        startManagingCursor(m_week_cursor);
+
+        ListView week_entry_list = (ListView) findViewById(R.id.entries_byweek);
+        m_week_ca = new SimpleCursorAdapter(this,
+                R.layout.week_entry, 
+                m_week_cursor,
+                new String[] {"title", "start_date", "duration"},
+                new int[] {R.id.week_entry_title, R.id.week_entry_start, R.id.week_entry_duration});
+        week_entry_list.setAdapter(m_week_ca);
+        week_entry_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        m_week_button = (Button) findViewById(R.id.week_selection_button);
+        m_week_button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                showDialog(SELECT_WEEK_DIALOG_ID);
+            }
+        });
+        final Calendar c = Calendar.getInstance();
+        m_week_button.setText(String.format("%04d-%02d-%02d", 
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+
+        registerForContextMenu(week_entry_list);
+    }
+
     @Override
     protected Dialog onCreateDialog(int id) 
     {
@@ -95,6 +142,9 @@ public class TimeEntriesActivity extends TabActivity
         switch (id) {
             case SELECT_DAY_DIALOG_ID:
                 return new DatePickerDialog(this, m_day_listener, 
+                        c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            case SELECT_WEEK_DIALOG_ID:
+                return new DatePickerDialog(this, m_week_listener, 
                         c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
         }
         return null;

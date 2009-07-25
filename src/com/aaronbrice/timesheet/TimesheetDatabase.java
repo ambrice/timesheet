@@ -102,6 +102,30 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public Cursor getWeekEntries() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT time_entries._id, title, date(start_time) AS start_date, end_time - start_time AS duration"
+                + " FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_date ASC", 
+                new String[] {getSqlDate()}
+        );
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor getWeekEntries(int year, int month, int day) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT time_entries._id, title, date(start_time) AS start_date, end_time - start_time AS duration"
+                + " FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_date ASC", 
+                new String[] {String.format("%04d-%02d-%02d", year, month, day)}
+        );
+        c.moveToFirst();
+        return c;
+    }
+
     public void deleteTimeEntry(long time_entry_id) {
         try {
             getWritableDatabase().delete("time_entries", "_id=?", new String[] {Long.toString(time_entry_id)});
