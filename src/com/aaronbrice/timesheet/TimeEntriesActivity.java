@@ -60,7 +60,7 @@ public class TimeEntriesActivity extends TabActivity
                 m_week_cursor = m_db.getWeekEntries(year, month + 1, week);
                 startManagingCursor(m_week_cursor);
                 m_week_ca.changeCursor(m_week_cursor);
-                m_week_button.setText(String.format("%04d-%02d-%02d", year, month + 1, week));
+                m_week_button.setText(String.format("Week of %04d-%02d-%02d", year, month + 1, week));
             }
         };
 

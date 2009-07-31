@@ -43,6 +43,7 @@ public class TimesheetActivity extends Activity {
 
         setContentView(R.layout.main);
         m_task_list = (ListView) findViewById(R.id.task_list);
+        m_task_list.setEmptyView(findViewById(R.id.task_empty));
         m_ca = new SimpleCursorAdapter(this,
                 android.R.layout.simple_list_item_single_choice, 
                 m_task_cursor,

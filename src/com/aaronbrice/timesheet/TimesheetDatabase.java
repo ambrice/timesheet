@@ -105,9 +105,11 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     public Cursor getWeekEntries() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT time_entries._id, title, date(start_time) AS start_date, end_time - start_time AS duration"
+                "SELECT time_entries._id AS _id, title, date(start_time) AS start_date,"
+                + " sum((strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0) AS duration"
                 + " FROM time_entries, tasks"
-                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_date ASC", 
+                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ?"
+                + " GROUP BY title, start_date ORDER BY start_date ASC",
                 new String[] {getSqlDate()}
         );
         c.moveToFirst();
@@ -117,9 +119,11 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     public Cursor getWeekEntries(int year, int month, int day) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT time_entries._id, title, date(start_time) AS start_date, end_time - start_time AS duration"
+                "SELECT time_entries._id AS _id, title, date(start_time) AS start_date,"
+                + " sum((strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0) AS duration"
                 + " FROM time_entries, tasks"
-                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_date ASC", 
+                + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ?"
+                + " GROUP BY title, start_date ORDER BY start_date ASC",
                 new String[] {String.format("%04d-%02d-%02d", year, month, day)}
         );
         c.moveToFirst();
