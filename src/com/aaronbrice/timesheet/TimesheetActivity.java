@@ -1,6 +1,6 @@
 package com.aaronbrice.timesheet;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -21,10 +21,9 @@ import android.widget.SimpleCursorAdapter;
 
 import com.aaronbrice.timesheet.TimesheetDatabase;
 
-public class TimesheetActivity extends Activity {
+public class TimesheetActivity extends ListActivity {
     TimesheetDatabase m_db;
     Cursor m_task_cursor;
-    ListView m_task_list;
     SimpleCursorAdapter m_ca;
 
     public static final int ADD_TASK_MENU_ITEM     = Menu.FIRST;
@@ -42,8 +41,6 @@ public class TimesheetActivity extends Activity {
         startManagingCursor(m_task_cursor);
 
         setContentView(R.layout.main);
-        m_task_list = (ListView) findViewById(R.id.task_list);
-        m_task_list.setEmptyView(findViewById(R.id.task_empty));
         m_ca = new SimpleCursorAdapter(this,
                 android.R.layout.simple_list_item_single_choice, 
                 m_task_cursor,
@@ -56,21 +53,10 @@ public class TimesheetActivity extends Activity {
             }
         });
 
-        m_task_list.setAdapter(m_ca);
-        m_task_list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        setListAdapter(m_ca);
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        registerForContextMenu(m_task_list);
-
-        m_task_list.setOnItemClickListener( new OnItemClickListener() { 
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if (id == m_db.getCurrentTaskId()) {
-                    m_db.completeCurrentTask();
-                    m_task_list.clearChoices();
-                } else {
-                    m_db.changeTask(id);
-                }
-            }
-        });
+        registerForContextMenu(getListView());
 
         updateCheckedItem();
     }
@@ -81,6 +67,16 @@ public class TimesheetActivity extends Activity {
         menu.add(Menu.NONE, ADD_TASK_MENU_ITEM, Menu.NONE, "Add Task");
         menu.add(Menu.NONE, LIST_ENTRIES_MENU_ITEM, Menu.NONE, "List Entries");
         return result;
+    }
+
+    @Override
+    public void onListItemClick(ListView lv, View v, int position, long id) {
+        if (id == m_db.getCurrentTaskId()) {
+            m_db.completeCurrentTask();
+            getListView().clearChoices();
+        } else {
+            m_db.changeTask(id);
+        }
     }
 
     @Override
@@ -139,12 +135,12 @@ public class TimesheetActivity extends Activity {
     private void updateCheckedItem() {
         long current_id = m_db.getCurrentTaskId();
         if (current_id == 0) {
-            m_task_list.clearChoices();
+            getListView().clearChoices();
         } else {
-            int count = m_task_list.getCount();
+            int count = getListView().getCount();
             for (int i=0; i < count; ++i) {
                 if (m_ca.getItemId(i) == current_id) {
-                    m_task_list.setItemChecked(i, true);
+                    getListView().setItemChecked(i, true);
                 }
             }
         }

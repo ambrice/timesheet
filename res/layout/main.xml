@@ -5,15 +5,14 @@
     android:layout_height="fill_parent"
     >
     <ListView  
-        android:id="@+id/task_list"
+        android:id="@android:id/list"
         android:layout_width="fill_parent" 
         android:layout_height="fill_parent" 
         />
     <TextView
-        android:id="@+id/task_empty"
+        android:id="@android:id/empty"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:text="No tasks set up"
+        android:text="@string/help_summary"
         />
 </LinearLayout>
-

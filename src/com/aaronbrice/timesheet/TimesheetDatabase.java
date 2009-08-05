@@ -39,7 +39,23 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int old_version, int new_version) {
-        // I guess I only have to worry about this if I get to version 2?
+        String[] sqls = new String[] {
+            "DROP TABLE tasks",
+            "DROP TABLE time_entries",
+            "CREATE TABLE tasks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, billable INTEGER)",
+            "CREATE TABLE time_entries (_id INTEGER PRIMARY KEY AUTOINCREMENT, task_id INTEGER, start_time TEXT NOT NULL, end_time TEXT)"
+        };
+        db.beginTransaction();
+        try {
+            for( String sql : sqls )
+                db.execSQL(sql);
+            db.setTransactionSuccessful();
+        } catch (SQLException e) {
+            Log.e("Error upgrading Timesheet database tables", e.toString());
+            throw e;
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public Cursor getTasks() {

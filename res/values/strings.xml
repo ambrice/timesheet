@@ -2,4 +2,20 @@
 <resources>
     <string name="app_name">Timesheet</string>
     <string name="task_prompt">Select a Task:</string>
+    <string name="help_summary">
+        <b>Welcome to Timesheet!</b>  To start, add some tasks to Timesheet.
+        Tasks can be billable tasks such as "Project Documentation" or
+        unbillable tasks such as "Lunch".  Use the "Add Task" menu 
+        option to add a task.\n
+        \n
+        After tasks have been added, click on a task to select it as
+        the current task.  The checkbox shows which task you are 
+        currently working on.  Selecting a new task will close out
+        the current one and start the new task.  Selecting the 
+        current task will close it out without starting a new one.\n
+        \n
+        To get a report of hours, use the "Time List" menu option to
+        get a report of time by day or by week.\n
+        \n
+    </string>
 </resources>

@@ -103,7 +103,7 @@ public class TimeEntriesActivity extends TabActivity
         });
         final Calendar c = Calendar.getInstance();
         m_day_button.setText(String.format("%04d-%02d-%02d", 
-                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)));
 
         registerForContextMenu(time_entry_list);
     }
@@ -130,7 +130,7 @@ public class TimeEntriesActivity extends TabActivity
         });
         final Calendar c = Calendar.getInstance();
         m_week_button.setText(String.format("%04d-%02d-%02d", 
-                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)));
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)));
 
         registerForContextMenu(week_entry_list);
     }
