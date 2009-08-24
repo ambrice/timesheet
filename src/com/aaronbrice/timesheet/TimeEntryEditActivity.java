@@ -25,6 +25,7 @@ public class TimeEntryEditActivity extends Activity {
     TimesheetDatabase m_db;
     String m_start_date, m_end_date;
     String m_start_time, m_end_time;
+    Long m_row_id;
 
     static final int START_DATE_DIALOG_ID = 0;
     static final int START_TIME_DIALOG_ID = 1;
@@ -67,6 +68,13 @@ public class TimeEntryEditActivity extends Activity {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        Bundle b = getIntent().getExtras();
+        if (b != null) {
+            m_row_id = b.getLong("_id");
+        } else {
+            m_row_id = null;
+        }
 
         m_db = new TimesheetDatabase(this);
         Cursor task_cursor = m_db.getTasks();

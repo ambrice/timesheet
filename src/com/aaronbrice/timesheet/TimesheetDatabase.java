@@ -84,6 +84,17 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public Cursor getTimeEntry(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT time_entries._id, title, strftime('%H:%M', start_time) AS start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id AND time_entries._id = ? ORDER BY start_time ASC", 
+                new String[] {Long.toString(id)}
+        );
+        c.moveToFirst();
+        return c;
+    }
+
     public Cursor getTimeEntries() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(

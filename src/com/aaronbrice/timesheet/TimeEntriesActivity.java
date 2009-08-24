@@ -39,6 +39,7 @@ public class TimeEntriesActivity extends TabActivity
     private static final int SELECT_WEEK_DIALOG_ID = 1;
 
     private static final int ACTIVITY_CREATE = 0;
+    private static final int ACTIVITY_EDIT   = 1;
 
     private DatePickerDialog.OnDateSetListener m_day_listener =
         new DatePickerDialog.OnDateSetListener() {
@@ -178,6 +179,7 @@ public class TimeEntriesActivity extends TabActivity
     {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(Menu.NONE, DELETE_TIME_ENTRY_MENU_ITEM, Menu.NONE, "Delete Time Entry");
+        menu.add(Menu.NONE, EDIT_TIME_ENTRY_MENU_ITEM, Menu.NONE, "Edit Time Entry");
     }
 
     @Override
@@ -188,6 +190,11 @@ public class TimeEntriesActivity extends TabActivity
             case DELETE_TIME_ENTRY_MENU_ITEM:
                 m_db.deleteTimeEntry(info.id);
                 m_day_cursor.requery();
+                return true;
+            case EDIT_TIME_ENTRY_MENU_ITEM:
+                Intent i = new Intent(this, TimeEntryEditActivity.class);
+                i.putExtra("_id", info.id);
+                startActivityForResult(i, ACTIVITY_EDIT);
                 return true;
         }
         return false;
@@ -211,6 +218,11 @@ public class TimeEntriesActivity extends TabActivity
 
         switch (requestCode) {
             case ACTIVITY_CREATE:
+                if (resultCode == RESULT_OK) {
+                    m_day_cursor.requery();
+                }
+                break;
+            case ACTIVITY_EDIT:
                 if (resultCode == RESULT_OK) {
                     m_day_cursor.requery();
                 }
