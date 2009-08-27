@@ -87,8 +87,8 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     public Cursor getTimeEntry(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT time_entries._id, title, strftime('%H:%M', start_time) AS start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks"
-                + " WHERE tasks._id = time_entries.task_id AND time_entries._id = ? ORDER BY start_time ASC", 
+                "SELECT _id, task_id, date(start_time) AS start_date, strftime('%H:%M', start_time) AS start_time, date(end_time) AS end_date, strftime('%H:%M', end_time) AS end_time FROM time_entries"
+                + " WHERE _id = ? ORDER BY start_time ASC", 
                 new String[] {Long.toString(id)}
         );
         c.moveToFirst();
@@ -126,6 +126,18 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
             getWritableDatabase().insert("time_entries", null, cv);
         } catch (SQLException e) {
             Log.e("Error adding new time entry", e.toString());
+        }
+    }
+
+    public void updateTimeEntry(long id, long task_id, String start_time, String end_time) {
+        ContentValues cv = new ContentValues();
+        cv.put("task_id", task_id);
+        cv.put("start_time", start_time);
+        cv.put("end_time", end_time);
+        try {
+            getWritableDatabase().update("time_entries", cv, "_id = ?", new String[] {Long.toString(id)});
+        } catch (SQLException e) {
+            Log.e("Error updating time entry", e.toString());
         }
     }
 

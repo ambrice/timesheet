@@ -97,7 +97,7 @@
             android:id="@+id/add_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add Time Entry"
+            android:text="Save Time Entry"
             />
         <Button
             android:id="@+id/cancel_button"

@@ -17,15 +17,87 @@ import java.util.Calendar;
 
 import com.aaronbrice.timesheet.TimesheetDatabase;
 
-
 public class TimeEntryEditActivity extends Activity {
+    class TimeEntryData {
+        String m_start_date, m_end_date;
+        String m_start_time, m_end_time;
+        long m_task_id, m_row_id;
+
+        public TimeEntryData() {
+            final Calendar c = Calendar.getInstance();
+            m_start_date = formatDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            m_start_time = formatTime(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+            m_end_date = m_start_date;
+            m_end_time = m_start_time;
+            m_task_id = -1;
+            m_row_id = -1;
+        }
+
+        public TimeEntryData(Cursor c, long row_id) {
+            m_start_date = c.getString(c.getColumnIndex("start_date"));
+            m_start_time = c.getString(c.getColumnIndex("start_time"));
+            m_end_date = c.getString(c.getColumnIndex("end_date"));
+            m_end_time = c.getString(c.getColumnIndex("end_time"));
+            m_task_id = c.getLong(c.getColumnIndex("task_id"));
+            m_row_id = row_id;
+        }
+
+        public long task_id() {
+            return m_task_id;
+        }
+
+        public void set_start_date(int year, int month, int day) {
+            m_start_date = formatDate(year, month, day);
+        }
+
+        public void set_start_time(int hour, int minute) {
+            m_start_time = formatTime(hour, minute);
+        }
+
+        public void set_end_date(int year, int month, int day) {
+            m_end_date = formatDate(year, month, day);
+        }
+
+        public void set_end_time(int hour, int minute) {
+            m_end_time = formatTime(hour, minute);
+        }
+
+        public String start_date() {
+            return m_start_date;
+        }
+
+        public String start_time() {
+            return m_start_time;
+        }
+
+        public String end_date() {
+            return m_end_date;
+        }
+
+        public String end_time() {
+            return m_end_time;
+        }
+
+        public long row() {
+            return m_row_id;
+        }
+
+        private String formatDate(int year, int month, int day)
+        {
+            return String.format("%04d-%02d-%02d", year, month+1, day);
+        }
+
+        private String formatTime(int hour, int minute)
+        {
+            return String.format("%02d:%02d", hour, minute);
+        }
+    }
+
+    TimeEntryData m_data;
     Button m_start_date_button, m_end_date_button;
     Button m_start_time_button, m_end_time_button;
 
     TimesheetDatabase m_db;
-    String m_start_date, m_end_date;
-    String m_start_time, m_end_time;
-    Long m_row_id;
 
     static final int START_DATE_DIALOG_ID = 0;
     static final int START_TIME_DIALOG_ID = 1;
@@ -35,7 +107,7 @@ public class TimeEntryEditActivity extends Activity {
     private DatePickerDialog.OnDateSetListener m_start_date_listener =
         new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int month, int day) {
-                m_start_date = formatDate(year, month, day);
+                m_data.set_start_date(year, month, day);
                 updateDisplay();
             }
         };
@@ -43,7 +115,7 @@ public class TimeEntryEditActivity extends Activity {
     private DatePickerDialog.OnDateSetListener m_end_date_listener =
         new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int month, int day) {
-                m_end_date = formatDate(year, month, day);
+                m_data.set_end_date(year, month, day);
                 updateDisplay();
             }
         };
@@ -51,7 +123,7 @@ public class TimeEntryEditActivity extends Activity {
     private TimePickerDialog.OnTimeSetListener m_start_time_listener =
         new TimePickerDialog.OnTimeSetListener() {
             public void onTimeSet(TimePicker view, int hour, int minute) {
-                m_start_time = formatTime(hour, minute);
+                m_data.set_start_time(hour, minute);
                 updateDisplay();
             }
         };
@@ -59,7 +131,7 @@ public class TimeEntryEditActivity extends Activity {
     private TimePickerDialog.OnTimeSetListener m_end_time_listener =
         new TimePickerDialog.OnTimeSetListener() {
             public void onTimeSet(TimePicker view, int hour, int minute) {
-                m_end_time = formatTime(hour, minute);
+                m_data.set_end_time(hour, minute);
                 updateDisplay();
             }
         };
@@ -69,14 +141,17 @@ public class TimeEntryEditActivity extends Activity {
     {
         super.onCreate(savedInstanceState);
 
+        m_db = new TimesheetDatabase(this);
+
         Bundle b = getIntent().getExtras();
         if (b != null) {
-            m_row_id = b.getLong("_id");
+            long row_id = b.getLong("_id");
+            Cursor entry = m_db.getTimeEntry(row_id);
+            m_data = new TimeEntryData(entry, row_id);
         } else {
-            m_row_id = null;
+            m_data = new TimeEntryData();
         }
 
-        m_db = new TimesheetDatabase(this);
         Cursor task_cursor = m_db.getTasks();
 
         setContentView(R.layout.time_entry_edit);
@@ -89,12 +164,14 @@ public class TimeEntryEditActivity extends Activity {
                 new int[] {android.R.id.text1});
         ca.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         task_edit.setAdapter(ca);
+        if (m_data.task_id() != -1) {
+            for (int i = 0; i < task_edit.getCount(); ++i) {
+                if (m_data.task_id() == task_edit.getItemIdAtPosition(i)) {
+                    task_edit.setSelection(i);
+                }
+            }
+        }
 
-        final Calendar c = Calendar.getInstance();
-        m_start_date = formatDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-        m_start_time = formatTime(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
-        m_end_date = m_start_date;
-        m_end_time = m_start_time;
 
         m_start_date_button = (Button) findViewById(R.id.time_entry_start_date);
         m_start_date_button.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +209,13 @@ public class TimeEntryEditActivity extends Activity {
                 long task_id = task_edit.getSelectedItemId();
 
                 if (task_id != Spinner.INVALID_ROW_ID) {
-                    m_db.newTimeEntry(task_id, m_start_date + " " + m_start_time, m_end_date + " " + m_end_time);
+                    String start = m_data.start_date() + " " + m_data.start_time();
+                    String end = m_data.end_date() + " " + m_data.end_time();
+                    if (m_data.row() == -1) {
+                        m_db.newTimeEntry(task_id, start, end);
+                    } else {
+                        m_db.updateTimeEntry(m_data.row(), task_id, start, end);
+                    }
                     setResult(RESULT_OK);
                 } else {
                     setResult(RESULT_CANCELED);
@@ -174,20 +257,11 @@ public class TimeEntryEditActivity extends Activity {
 
     private void updateDisplay() 
     {
-        m_start_date_button.setText(m_start_date);
-        m_start_time_button.setText(m_start_time);
-        m_end_date_button.setText(m_end_date);
-        m_end_time_button.setText(m_end_time);
+        m_start_date_button.setText(m_data.start_date());
+        m_start_time_button.setText(m_data.start_time());
+        m_end_date_button.setText(m_data.end_date());
+        m_end_time_button.setText(m_data.end_time());
     }
 
-    private String formatDate(int year, int month, int day)
-    {
-        return String.format("%04d-%02d-%02d", year, month+1, day);
-    }
-
-    private String formatTime(int hour, int minute)
-    {
-        return String.format("%02d:%02d", hour, minute);
-    }
 }
 
