@@ -23,6 +23,7 @@
         android:background="#FF909090"
         />
     <LinearLayout
+        android:id="@+id/start_layout"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -50,6 +51,7 @@
             />
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/end_layout"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

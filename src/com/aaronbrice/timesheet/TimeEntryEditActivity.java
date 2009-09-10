@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TimePicker;
@@ -172,7 +173,6 @@ public class TimeEntryEditActivity extends Activity {
             }
         }
 
-
         m_start_date_button = (Button) findViewById(R.id.time_entry_start_date);
         m_start_date_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -201,6 +201,13 @@ public class TimeEntryEditActivity extends Activity {
             }
         });
 
+        if (m_data.row() == m_db.getCurrentId()) {
+            // For the current task, hide the end date and end time buttons,
+            // only start date and time are edittable
+            LinearLayout end_layout = (LinearLayout) findViewById(R.id.end_layout);
+            end_layout.setVisibility(View.GONE);
+        }
+
         updateDisplay();
 
         Button addButton = (Button) findViewById(R.id.add_button);
@@ -213,6 +220,8 @@ public class TimeEntryEditActivity extends Activity {
                     String end = m_data.end_date() + " " + m_data.end_time();
                     if (m_data.row() == -1) {
                         m_db.newTimeEntry(task_id, start, end);
+                    } else if (m_data.row() == m_db.getCurrentId()) {
+                        m_db.updateTimeEntry(m_data.row(), task_id, start);
                     } else {
                         m_db.updateTimeEntry(m_data.row(), task_id, start, end);
                     }
@@ -236,24 +245,27 @@ public class TimeEntryEditActivity extends Activity {
     @Override
     protected Dialog onCreateDialog(int id) 
     {
-        final Calendar c = Calendar.getInstance();
+        String[] items;
         switch (id) {
             case START_DATE_DIALOG_ID:
+                items = m_data.start_date().split("-");
                 return new DatePickerDialog(this, m_start_date_listener, 
-                        c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+                        Integer.parseInt(items[0]), Integer.parseInt(items[1]), Integer.parseInt(items[2]));
             case START_TIME_DIALOG_ID:
+                items = m_data.start_time().split(":");
                 return new TimePickerDialog(this, m_start_time_listener, 
-                        c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true);
+                        Integer.parseInt(items[0]), Integer.parseInt(items[1]), true);
             case END_DATE_DIALOG_ID:
+                items = m_data.end_date().split("-");
                 return new DatePickerDialog(this, m_end_date_listener, 
-                        c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+                        Integer.parseInt(items[0]), Integer.parseInt(items[1]), Integer.parseInt(items[2]));
             case END_TIME_DIALOG_ID:
+                items = m_data.end_time().split(":");
                 return new TimePickerDialog(this, m_end_time_listener,
-                        c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true);
+                        Integer.parseInt(items[0]), Integer.parseInt(items[1]), true);
         }
         return null;
     }
-
 
     private void updateDisplay() 
     {

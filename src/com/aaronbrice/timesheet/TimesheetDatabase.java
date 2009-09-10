@@ -141,6 +141,17 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         }
     }
 
+    public void updateTimeEntry(long id, long task_id, String start_time) {
+        ContentValues cv = new ContentValues();
+        cv.put("task_id", task_id);
+        cv.put("start_time", start_time);
+        try {
+            getWritableDatabase().update("time_entries", cv, "_id = ?", new String[] {Long.toString(id)});
+        } catch (SQLException e) {
+            Log.e("Error updating time entry", e.toString());
+        }
+    }
+
     public Cursor getWeekEntries() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
