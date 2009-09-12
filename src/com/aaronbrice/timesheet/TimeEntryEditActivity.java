@@ -250,7 +250,7 @@ public class TimeEntryEditActivity extends Activity {
             case START_DATE_DIALOG_ID:
                 items = m_data.start_date().split("-");
                 return new DatePickerDialog(this, m_start_date_listener, 
-                        Integer.parseInt(items[0]), Integer.parseInt(items[1]), Integer.parseInt(items[2]));
+                        Integer.parseInt(items[0]), Integer.parseInt(items[1]) - 1, Integer.parseInt(items[2]));
             case START_TIME_DIALOG_ID:
                 items = m_data.start_time().split(":");
                 return new TimePickerDialog(this, m_start_time_listener, 
@@ -258,7 +258,7 @@ public class TimeEntryEditActivity extends Activity {
             case END_DATE_DIALOG_ID:
                 items = m_data.end_date().split("-");
                 return new DatePickerDialog(this, m_end_date_listener, 
-                        Integer.parseInt(items[0]), Integer.parseInt(items[1]), Integer.parseInt(items[2]));
+                        Integer.parseInt(items[0]), Integer.parseInt(items[1]) - 1, Integer.parseInt(items[2]));
             case END_TIME_DIALOG_ID:
                 items = m_data.end_time().split(":");
                 return new TimePickerDialog(this, m_end_time_listener,

@@ -11,6 +11,8 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -95,6 +97,14 @@ public class TimeEntriesActivity extends TabActivity
                 new int[] {R.id.time_entry_title, R.id.time_entry_start, R.id.time_entry_end});
         time_entry_list.setAdapter(m_day_ca);
         time_entry_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        time_entry_list.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(parent.getContext(), TimeEntryEditActivity.class);
+                i.putExtra("_id", id);
+                startActivityForResult(i, ACTIVITY_EDIT);
+            }
+        });
 
         m_day_button = (Button) findViewById(R.id.day_selection_button);
         m_day_button.setOnClickListener(new View.OnClickListener() {
