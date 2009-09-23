@@ -17,19 +17,83 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Vector;
 
 import com.aaronbrice.timesheet.TimesheetDatabase;
 
 public class TimeEntriesActivity extends TabActivity
 {
+    class TimeEntriesWeeklyData 
+    {
+        TimesheetDatabase m_db;
+        int m_year, m_month, m_day;
+
+        // In perl: $data[$day][$i] = { _id => $id, title => $title, duration => $duration }
+        Vector<Vector<HashMap<String, String>>> m_data = new Vector<Vector<HashMap<String,String>>>();
+        HashMap<String, Float> m_totals = new HashMap<String, Float>();
+
+        public TimeEntriesWeeklyData(TimesheetDatabase db, int year, int month, int day) {
+            m_db = db;
+            m_year = year;
+            m_month = month;
+            m_day = day;
+            for (int i=0; i < 7; ++i) {
+                m_data.add(i, new Vector<HashMap<String, String>>());
+            }
+            requery();
+        }
+
+        public void setDate(int year, int month, int day) {
+            m_year = year;
+            m_month = month;
+            m_day = day;
+        }
+
+        public void requery() {
+            for (int i=0; i < 7; ++i) {
+                m_data.get(i).clear();
+            }
+
+            Cursor c = m_db.getWeekEntries(m_year, m_month, m_day);
+
+            while (!c.isAfterLast()) {
+                HashMap<String, String> row_data = new HashMap<String, String>();
+                int day = c.getInt(c.getColumnIndex("day"));
+                row_data.put("_id", c.getString(c.getColumnIndex("_id")));
+                String title = c.getString(c.getColumnIndex("title"));
+                row_data.put("title", title);
+                float duration = c.getFloat(c.getColumnIndex("duration"));
+                row_data.put("duration", String.format("%1.2f", duration));
+                m_data.get(day).add(row_data);
+
+                // Track the total durations
+                if (m_totals.containsKey(title)) {
+                    m_totals.put(title, m_totals.get(title) + duration);
+                } else {
+                    m_totals.put(title, duration);
+                }
+
+                c.moveToNext();
+            }
+        }
+
+        public Vector<HashMap<String, String>> entries(int day) {
+            return m_data.get(day);
+        }
+    }
+
+    TimeEntriesWeeklyData m_week_data;
     TimesheetDatabase m_db;
-    Cursor m_day_cursor, m_week_cursor;
+    Cursor m_day_cursor;
     TabHost m_tab_host;
-    SimpleCursorAdapter m_day_ca, m_week_ca;
+    SimpleCursorAdapter m_day_ca;
+    SimpleAdapter m_week_adapters[] = new SimpleAdapter[7];
     Button m_day_button, m_week_button;
 
     public static final int ADD_TIME_ENTRY_MENU_ITEM    = Menu.FIRST;
@@ -57,13 +121,13 @@ public class TimeEntriesActivity extends TabActivity
 
     private DatePickerDialog.OnDateSetListener m_week_listener =
         new DatePickerDialog.OnDateSetListener() {
-            public void onDateSet(DatePicker view, int year, int month, int week) {
-                m_week_cursor.close();
-                stopManagingCursor(m_week_cursor);
-                m_week_cursor = m_db.getWeekEntries(year, month + 1, week);
-                startManagingCursor(m_week_cursor);
-                m_week_ca.changeCursor(m_week_cursor);
-                m_week_button.setText(String.format("Week of %04d-%02d-%02d", year, month + 1, week));
+            public void onDateSet(DatePicker view, int year, int month, int day) {
+                m_week_data.setDate(year, month + 1, day);
+                m_week_data.requery();
+                for (SimpleAdapter sa : m_week_adapters) {
+                    sa.notifyDataSetChanged();
+                }
+                m_week_button.setText(String.format("Week of %04d-%02d-%02d", year, month + 1, day));
             }
         };
 
@@ -121,17 +185,24 @@ public class TimeEntriesActivity extends TabActivity
 
     protected void setupWeekTab() 
     {
-        m_week_cursor = m_db.getWeekEntries();
-        startManagingCursor(m_week_cursor);
+        final Calendar c = Calendar.getInstance();
+        m_week_data = new TimeEntriesWeeklyData(m_db,
+                c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
 
-        ListView week_entry_list = (ListView) findViewById(R.id.entries_byweek);
-        m_week_ca = new SimpleCursorAdapter(this,
-                R.layout.week_entry, 
-                m_week_cursor,
-                new String[] {"title", "start_date", "duration"},
-                new int[] {R.id.week_entry_title, R.id.week_entry_start, R.id.week_entry_duration});
-        week_entry_list.setAdapter(m_week_ca);
-        week_entry_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        int list_views[] = new int[] {R.id.entries_sunday, R.id.entries_monday, R.id.entries_tuesday,
+            R.id.entries_wednesday, R.id.entries_thursday, R.id.entries_friday, R.id.entries_saturday};
+
+        for (int i=0; i < 7; ++i) {
+            ListView list = (ListView) findViewById(list_views[i]);
+            
+            m_week_adapters[i] = new SimpleAdapter(this,
+                    m_week_data.entries(i),
+                    R.layout.week_entry, 
+                    new String[] {"title", "duration"},
+                    new int[] {R.id.week_entry_title, R.id.week_entry_duration});
+            list.setAdapter(m_week_adapters[i]);
+            list.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        }
 
         m_week_button = (Button) findViewById(R.id.week_selection_button);
         m_week_button.setOnClickListener(new View.OnClickListener() {
@@ -139,11 +210,9 @@ public class TimeEntriesActivity extends TabActivity
                 showDialog(SELECT_WEEK_DIALOG_ID);
             }
         });
-        final Calendar c = Calendar.getInstance();
-        m_week_button.setText(String.format("%04d-%02d-%02d", 
+        m_week_button.setText(String.format("Week of %04d-%02d-%02d", 
                     c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)));
 
-        registerForContextMenu(week_entry_list);
     }
 
     @Override
