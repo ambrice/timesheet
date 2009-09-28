@@ -23,6 +23,7 @@ import android.widget.TabHost;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import com.aaronbrice.timesheet.TimesheetDatabase;
@@ -36,7 +37,7 @@ public class TimeEntriesActivity extends TabActivity
 
         // In perl: $data[$day][$i] = { _id => $id, title => $title, duration => $duration }
         Vector<Vector<HashMap<String, String>>> m_data = new Vector<Vector<HashMap<String,String>>>();
-        HashMap<String, Float> m_totals = new HashMap<String, Float>();
+        Vector<HashMap<String, String>> m_totals = new Vector<HashMap<String, String>>();
 
         public TimeEntriesWeeklyData(TimesheetDatabase db, int year, int month, int day) {
             m_db = db;
@@ -59,9 +60,11 @@ public class TimeEntriesActivity extends TabActivity
             for (int i=0; i < 7; ++i) {
                 m_data.get(i).clear();
             }
+            m_totals.clear();
 
             Cursor c = m_db.getWeekEntries(m_year, m_month, m_day);
 
+            HashMap<String, Float> total_map = new HashMap<String, Float>();
             while (!c.isAfterLast()) {
                 HashMap<String, String> row_data = new HashMap<String, String>();
                 int day = c.getInt(c.getColumnIndex("day"));
@@ -73,18 +76,28 @@ public class TimeEntriesActivity extends TabActivity
                 m_data.get(day).add(row_data);
 
                 // Track the total durations
-                if (m_totals.containsKey(title)) {
-                    m_totals.put(title, m_totals.get(title) + duration);
+                if (total_map.containsKey(title)) {
+                    total_map.put(title, total_map.get(title) + duration);
                 } else {
-                    m_totals.put(title, duration);
+                    total_map.put(title, duration);
                 }
 
                 c.moveToNext();
+            }
+            for (Map.Entry<String, Float> entry : total_map.entrySet()) {
+                HashMap<String, String> row = new HashMap<String, String>();
+                row.put("title", entry.getKey());
+                row.put("duration", String.format("%1.2f", entry.getValue()));
+                m_totals.add(row);
             }
         }
 
         public Vector<HashMap<String, String>> entries(int day) {
             return m_data.get(day);
+        }
+
+        public Vector<HashMap<String, String>> totals() {
+            return m_totals;
         }
     }
 
@@ -94,6 +107,7 @@ public class TimeEntriesActivity extends TabActivity
     TabHost m_tab_host;
     SimpleCursorAdapter m_day_ca;
     SimpleAdapter m_week_adapters[] = new SimpleAdapter[7];
+    SimpleAdapter m_totals_adapter;
     Button m_day_button, m_week_button;
 
     public static final int ADD_TIME_ENTRY_MENU_ITEM    = Menu.FIRST;
@@ -110,11 +124,8 @@ public class TimeEntriesActivity extends TabActivity
     private DatePickerDialog.OnDateSetListener m_day_listener =
         new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int month, int day) {
-                m_day_cursor.close();
-                stopManagingCursor(m_day_cursor);
                 m_day_cursor = m_db.getTimeEntries(year, month + 1, day);
-                startManagingCursor(m_day_cursor);
-                m_day_ca.changeCursor(m_day_cursor);
+                m_day_ca.notifyDataSetChanged();
                 m_day_button.setText(String.format("%04d-%02d-%02d", year, month + 1, day));
             }
         };
@@ -127,6 +138,7 @@ public class TimeEntriesActivity extends TabActivity
                 for (SimpleAdapter sa : m_week_adapters) {
                     sa.notifyDataSetChanged();
                 }
+                m_totals_adapter.notifyDataSetChanged();
                 m_week_button.setText(String.format("Week of %04d-%02d-%02d", year, month + 1, day));
             }
         };
@@ -202,7 +214,18 @@ public class TimeEntriesActivity extends TabActivity
                     new int[] {R.id.week_entry_title, R.id.week_entry_duration});
             list.setAdapter(m_week_adapters[i]);
             list.setChoiceMode(ListView.CHOICE_MODE_NONE);
+            list.setItemsCanFocus(false);
         }
+
+        ListView total_view = (ListView) findViewById(R.id.entries_week_totals);
+        m_totals_adapter = new SimpleAdapter(this,
+                m_week_data.totals(),
+                R.layout.week_entry,
+                new String[] {"title", "duration"},
+                new int[] {R.id.week_entry_title, R.id.week_entry_duration});
+        total_view.setAdapter(m_totals_adapter);
+        total_view.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        total_view.setItemsCanFocus(false);
 
         m_week_button = (Button) findViewById(R.id.week_selection_button);
         m_week_button.setOnClickListener(new View.OnClickListener() {
