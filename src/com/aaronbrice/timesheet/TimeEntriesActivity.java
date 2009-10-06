@@ -90,6 +90,7 @@ public class TimeEntriesActivity extends TabActivity
                 row.put("duration", String.format("%1.2f", entry.getValue()));
                 m_totals.add(row);
             }
+            c.close();
         }
 
         public Vector<HashMap<String, String>> entries(int day) {
@@ -125,7 +126,7 @@ public class TimeEntriesActivity extends TabActivity
         new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int month, int day) {
                 m_day_cursor = m_db.getTimeEntries(year, month + 1, day);
-                m_day_ca.notifyDataSetChanged();
+                m_day_ca.changeCursor(m_day_cursor);
                 m_day_button.setText(String.format("%04d-%02d-%02d", year, month + 1, day));
             }
         };
@@ -160,10 +161,17 @@ public class TimeEntriesActivity extends TabActivity
         setupWeekTab();
     }
 
+    @Override
+    public void onDestroy()
+    {
+        m_day_cursor.close();
+        m_db.close();
+        super.onDestroy();
+    }
+
     protected void setupDayTab() 
     {
         m_day_cursor = m_db.getTimeEntries();
-        startManagingCursor(m_day_cursor);
 
         ListView time_entry_list = (ListView) findViewById(R.id.entries_byday);
         m_day_ca = new SimpleCursorAdapter(this,
