@@ -1,4 +1,10 @@
-package com.aaronbrice.timesheet;
+/***
+ * Copyright (c) 2009 Tasty Cactus Software, LLC
+ * 
+ * All rights reserved.
+ */
+
+package com.tastycactus.timesheet;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,7 +13,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
-import com.aaronbrice.timesheet.TimesheetDatabase;
+import com.tastycactus.timesheet.TimesheetDatabase;
 
 public class TaskEditActivity extends Activity {
     TimesheetDatabase m_db;
@@ -45,5 +51,12 @@ public class TaskEditActivity extends Activity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        m_db.close();
+        super.onDestroy();
     }
 }

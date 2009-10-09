@@ -1,4 +1,10 @@
-package com.aaronbrice.timesheet;
+/***
+ * Copyright (c) 2009 Tasty Cactus Software, LLC
+ * 
+ * All rights reserved.
+ */
+
+package com.tastycactus.timesheet;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -26,7 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import com.aaronbrice.timesheet.TimesheetDatabase;
+import com.tastycactus.timesheet.TimesheetDatabase;
+import com.tastycactus.timesheet.MergeAdapter;
 
 public class TimeEntriesActivity extends TabActivity
 {
@@ -108,6 +115,7 @@ public class TimeEntriesActivity extends TabActivity
     TabHost m_tab_host;
     SimpleCursorAdapter m_day_ca;
     SimpleAdapter m_week_adapters[] = new SimpleAdapter[7];
+    MergeAdapter m_merge_adapter;
     SimpleAdapter m_totals_adapter;
     Button m_day_button, m_week_button;
 
@@ -125,6 +133,7 @@ public class TimeEntriesActivity extends TabActivity
     private DatePickerDialog.OnDateSetListener m_day_listener =
         new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int month, int day) {
+                m_day_cursor.close();
                 m_day_cursor = m_db.getTimeEntries(year, month + 1, day);
                 m_day_ca.changeCursor(m_day_cursor);
                 m_day_button.setText(String.format("%04d-%02d-%02d", year, month + 1, day));
@@ -136,9 +145,7 @@ public class TimeEntriesActivity extends TabActivity
             public void onDateSet(DatePicker view, int year, int month, int day) {
                 m_week_data.setDate(year, month + 1, day);
                 m_week_data.requery();
-                for (SimpleAdapter sa : m_week_adapters) {
-                    sa.notifyDataSetChanged();
-                }
+                m_merge_adapter.notifyDataSetChanged();
                 m_totals_adapter.notifyDataSetChanged();
                 m_week_button.setText(String.format("Week of %04d-%02d-%02d", year, month + 1, day));
             }
@@ -209,21 +216,22 @@ public class TimeEntriesActivity extends TabActivity
         m_week_data = new TimeEntriesWeeklyData(m_db,
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
 
-        int list_views[] = new int[] {R.id.entries_sunday, R.id.entries_monday, R.id.entries_tuesday,
-            R.id.entries_wednesday, R.id.entries_thursday, R.id.entries_friday, R.id.entries_saturday};
+        ListView week_list = (ListView) findViewById(R.id.entries_byweek);
 
         for (int i=0; i < 7; ++i) {
-            ListView list = (ListView) findViewById(list_views[i]);
-            
             m_week_adapters[i] = new SimpleAdapter(this,
                     m_week_data.entries(i),
                     R.layout.week_entry, 
                     new String[] {"title", "duration"},
                     new int[] {R.id.week_entry_title, R.id.week_entry_duration});
-            list.setAdapter(m_week_adapters[i]);
-            list.setChoiceMode(ListView.CHOICE_MODE_NONE);
-            list.setItemsCanFocus(false);
         }
+
+        //MergeAdapter(Context ctx, int header_layout_id, int header_view_id, Adapter[] adapter_list, String[] header_list)
+        m_merge_adapter = new MergeAdapter(this, R.layout.header, R.id.header, m_week_adapters,
+                new String[] {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"});
+        week_list.setAdapter(m_merge_adapter);
+        week_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        week_list.setItemsCanFocus(false);
 
         ListView total_view = (ListView) findViewById(R.id.entries_week_totals);
         m_totals_adapter = new SimpleAdapter(this,

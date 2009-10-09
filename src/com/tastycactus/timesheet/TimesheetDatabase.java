@@ -1,4 +1,10 @@
-package com.aaronbrice.timesheet;
+/***
+ * Copyright (c) 2009 Tasty Cactus Software, LLC
+ * 
+ * All rights reserved.
+ */
+
+package com.tastycactus.timesheet;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -21,7 +27,7 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) throws SQLException {
         String[] sqls = new String[] {
-            "CREATE TABLE tasks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, billable INTEGER)",
+            "CREATE TABLE tasks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, billable INTEGER, hidden INTEGER)",
             "CREATE TABLE time_entries (_id INTEGER PRIMARY KEY AUTOINCREMENT, task_id INTEGER, start_time TEXT NOT NULL, end_time TEXT)"
         };
         db.beginTransaction();

@@ -1,4 +1,10 @@
-package com.aaronbrice.timesheet;
+/***
+ * Copyright (c) 2009 Tasty Cactus Software, LLC
+ * 
+ * All rights reserved.
+ */
+
+package com.tastycactus.timesheet;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -16,7 +22,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.aaronbrice.timesheet.TimesheetDatabase;
+import com.tastycactus.timesheet.TimesheetDatabase;
 
 public class TimesheetActivity extends ListActivity {
     TimesheetDatabase m_db;
@@ -56,6 +62,14 @@ public class TimesheetActivity extends ListActivity {
         registerForContextMenu(getListView());
 
         updateCheckedItem();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        m_task_cursor.close();
+        m_db.close();
+        super.onDestroy();
     }
 
     @Override

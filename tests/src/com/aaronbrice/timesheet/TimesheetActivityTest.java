@@ -1,4 +1,4 @@
-package com.aaronbrice.timesheet;
+package com.tastycactus.timesheet;
 
 import android.test.ActivityInstrumentationTestCase;
 
@@ -9,13 +9,13 @@ import android.test.ActivityInstrumentationTestCase;
  * <p/>
  * To run this test, you can type:
  * adb shell am instrument -w \
- * -e class com.aaronbrice.timesheet.TimesheetActivityTest \
- * com.aaronbrice.timesheet.tests/android.test.InstrumentationTestRunner
+ * -e class com.tastycactus.timesheet.TimesheetActivityTest \
+ * com.tastycactus.timesheet.tests/android.test.InstrumentationTestRunner
  */
 public class TimesheetActivityTest extends ActivityInstrumentationTestCase<TimesheetActivity> {
 
     public TimesheetActivityTest() {
-        super("com.aaronbrice.timesheet", TimesheetActivity.class);
+        super("com.tastycactus.timesheet", TimesheetActivity.class);
     }
 
 }

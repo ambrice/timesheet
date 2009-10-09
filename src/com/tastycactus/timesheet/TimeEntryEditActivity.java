@@ -1,4 +1,10 @@
-package com.aaronbrice.timesheet;
+/***
+ * Copyright (c) 2009 Tasty Cactus Software, LLC
+ * 
+ * All rights reserved.
+ */
+
+package com.tastycactus.timesheet;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
@@ -16,7 +22,7 @@ import android.widget.TimePicker;
 
 import java.util.Calendar;
 
-import com.aaronbrice.timesheet.TimesheetDatabase;
+import com.tastycactus.timesheet.TimesheetDatabase;
 
 public class TimeEntryEditActivity extends Activity {
     class TimeEntryData {
@@ -149,6 +155,7 @@ public class TimeEntryEditActivity extends Activity {
             long row_id = b.getLong("_id");
             Cursor entry = m_db.getTimeEntry(row_id);
             m_data = new TimeEntryData(entry, row_id);
+            entry.close();
         } else {
             m_data = new TimeEntryData();
         }
@@ -163,6 +170,7 @@ public class TimeEntryEditActivity extends Activity {
                 task_cursor,
                 new String[] {"title"},
                 new int[] {android.R.id.text1});
+        task_cursor.close();
         ca.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         task_edit.setAdapter(ca);
         if (m_data.task_id() != -1) {
@@ -240,6 +248,13 @@ public class TimeEntryEditActivity extends Activity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        m_db.close();
+        super.onDestroy();
     }
 
     @Override
