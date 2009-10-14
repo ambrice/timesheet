@@ -53,6 +53,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see ListAdapter#areAllItemsEnabled()
      */
+    @Override
     public boolean areAllItemsEnabled()
     {
         return false;
@@ -62,6 +63,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see ListAdapter#isEnabled(int)
      */
+    @Override
     public boolean isEnabled(int position)
     {
         if (getAdapterSection(position).index == -1) {
@@ -75,6 +77,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#registerDataSetObserver(DataSetObserver)
      */
+    @Override
     public void registerDataSetObserver(DataSetObserver observer)
     {
         for (Adapter a : adapter_list) {
@@ -86,6 +89,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#unregisterDataSetObserver(DataSetObserver)
      */
+    @Override
     public void unregisterDataSetObserver(DataSetObserver observer)
     {
         for (Adapter a : adapter_list) {
@@ -97,6 +101,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#getCount()
      */
+    @Override
     public int getCount()
     {
         int count = 0;
@@ -112,6 +117,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#getItem(int)
      */
+    @Override
     public Object getItem(int position)
     {
         AdapterSection section = getAdapterSection(position);
@@ -126,6 +132,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#getItemId(int)
      */
+    @Override
     public long getItemId(int position)
     {
         return position;
@@ -135,6 +142,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#hasStableIds()
      */
+    @Override
     public boolean hasStableIds()
     {
         return false;
@@ -144,6 +152,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#getView(int,View,ViewGroup)
      */
+    @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
         AdapterSection section = getAdapterSection(position);
@@ -167,6 +176,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#getItemViewType(int)
      */
+    @Override
     public int getItemViewType(int position)
     {
         if (getAdapterSection(position).index == -1) {
@@ -179,6 +189,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#getViewTypeCount()
      */
+    @Override
     public int getViewTypeCount()
     {
         return TYPE_COUNT;
@@ -188,6 +199,7 @@ public class MergeAdapter extends BaseAdapter
      * {@inheritDoc}
      * @see android.widget.Adapter#isEmpty()
      */
+    @Override
     public boolean isEmpty()
     {
         if (adapter_list.length == 0) {
@@ -216,7 +228,7 @@ public class MergeAdapter extends BaseAdapter
             if (p + a.getCount() >= position) {
                 section.adapter = a;
                 section.header = h;
-                section.index = position - p;
+                section.index = position - p - 1;
                 return section;
             }
             p += a.getCount() + 1;
