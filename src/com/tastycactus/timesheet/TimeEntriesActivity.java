@@ -219,9 +219,12 @@ public class TimeEntriesActivity extends TabActivity
         ListView week_list = (ListView) findViewById(R.id.entries_byweek);
 
         for (int i=0; i < 7; ++i) {
+            // The weeks in sqlite start on Monday, but Sunday is day 0, so the week
+            // actually goes from day 1 to day 6, then day 0
+            int day = i == 6 ? 0 : i + 1;
             m_week_adapters[i] = new SimpleAdapter(this,
-                    m_week_data.entries(i),
-                    R.layout.week_entry, 
+                    m_week_data.entries(day),
+                    R.layout.week_entry,
                     new String[] {"title", "duration"},
                     new int[] {R.id.week_entry_title, R.id.week_entry_duration});
         }

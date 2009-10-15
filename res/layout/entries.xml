@@ -39,9 +39,8 @@
                     android:layout_height="fill_parent" 
                 />
             </LinearLayout>
-            <LinearLayout
+            <RelativeLayout
                 android:id="@+id/byweek_content"
-                android:orientation="vertical"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 >
@@ -51,20 +50,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="7dip"
                     android:gravity="center"
+                    android:layout_alignParentTop="true"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                />
-                <ListView
-                    android:id="@+id/entries_byweek"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:divider="@null"
-                    android:dividerHeight="0px"
-                />
-                <TextView 
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Totals:"
                 />
                 <ListView
                     android:id="@+id/entries_week_totals"
@@ -72,8 +59,35 @@
                     android:layout_height="wrap_content" 
                     android:divider="@null"
                     android:dividerHeight="0px"
+                    android:layout_alignParentBottom="true"
                 />
-            </LinearLayout>
+                <TextView 
+                    android:id="@+id/totals_label"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Totals:"
+                    android:layout_above="@id/entries_week_totals"
+                />
+                <View
+                    android:id="@+id/separator"
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:layout_marginTop="6dip"
+                    android:layout_marginBottom="7dip"
+                    android:background="#FF909090"
+                    android:layout_above="@id/totals_label"
+                    />
+                <ListView
+                    android:id="@+id/entries_byweek"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/week_selection_button"
+                    android:layout_above="@id/separator"
+                    android:divider="@null"
+                    android:dividerHeight="0px"
+                />
+            </RelativeLayout>
         </FrameLayout>
     </LinearLayout>
 </TabHost>

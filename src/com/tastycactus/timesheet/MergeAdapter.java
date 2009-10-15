@@ -8,6 +8,7 @@ package com.tastycactus.timesheet;
 
 import android.content.Context;
 
+import android.database.DataSetObservable;
 import android.database.DataSetObserver;
 
 import android.view.LayoutInflater;
@@ -15,21 +16,17 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.Adapter;
-import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
-public class MergeAdapter extends BaseAdapter
+public class MergeAdapter implements ListAdapter
 {
+    DataSetObservable dso = new DataSetObservable();
     Adapter[] adapter_list;
     String[] header_list;
     int header_layout_id;
     int header_view_id;
     Context ctx;
-
-    public static final int TYPE_HEADER = 0;
-    public static final int TYPE_LIST_ITEM = 1;
-
-    private static final int TYPE_COUNT = 2;
 
     class AdapterSection {
         public Adapter adapter;
@@ -80,9 +77,7 @@ public class MergeAdapter extends BaseAdapter
     @Override
     public void registerDataSetObserver(DataSetObserver observer)
     {
-        for (Adapter a : adapter_list) {
-            a.registerDataSetObserver(observer);
-        }
+        dso.registerObserver(observer);
     }
 
     /**
@@ -92,9 +87,7 @@ public class MergeAdapter extends BaseAdapter
     @Override
     public void unregisterDataSetObserver(DataSetObserver observer)
     {
-        for (Adapter a : adapter_list) {
-            a.unregisterDataSetObserver(observer);
-        }
+        dso.unregisterObserver(observer);
     }
 
     /**
@@ -163,7 +156,7 @@ public class MergeAdapter extends BaseAdapter
                 View v = inflater.inflate(header_layout_id, null);
                 tview = (TextView) v.findViewById(header_view_id);
             } else {
-                tview = (TextView) convertView.findViewById(header_view_id);
+                tview = (TextView) convertView;
             }
             tview.setText(section.header);
             return tview;
@@ -179,10 +172,18 @@ public class MergeAdapter extends BaseAdapter
     @Override
     public int getItemViewType(int position)
     {
-        if (getAdapterSection(position).index == -1) {
-            return TYPE_HEADER;
+        AdapterSection section = getAdapterSection(position);
+        if (section.index == -1) {
+            return 0;
         }
-        return TYPE_LIST_ITEM;
+        int total = 1;
+        for (Adapter a : adapter_list) {
+            if (a == section.adapter) {
+                return total + section.adapter.getItemViewType(section.index);
+            }
+            total += a.getViewTypeCount();
+        }
+        return -1;
     }
 
     /**
@@ -192,7 +193,11 @@ public class MergeAdapter extends BaseAdapter
     @Override
     public int getViewTypeCount()
     {
-        return TYPE_COUNT;
+        int total = 1;
+        for (Adapter a : adapter_list) {
+            total += a.getViewTypeCount();
+        }
+        return total;
     }
 
     /**
@@ -208,6 +213,16 @@ public class MergeAdapter extends BaseAdapter
             return true;
         }
         return false;
+    }
+
+    public void notifyDataSetChanged()
+    {
+        dso.notifyChanged();
+    }
+
+    public void notifyDataSetInvalidated()
+    {
+        dso.notifyInvalidated();
     }
 
     protected AdapterSection getAdapterSection(int position) 

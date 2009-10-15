@@ -170,7 +170,6 @@ public class TimeEntryEditActivity extends Activity {
                 task_cursor,
                 new String[] {"title"},
                 new int[] {android.R.id.text1});
-        task_cursor.close();
         ca.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         task_edit.setAdapter(ca);
         if (m_data.task_id() != -1) {

@@ -194,7 +194,7 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
                 + " WHERE tasks._id = time_entries.task_id"
                 + " AND tasks.billable = 1"
                 + " AND strftime('%Y%W', start_time) = strftime('%Y%W', ?)"
-                + " GROUP BY title, day ORDER BY day ASC",
+                + " GROUP BY title, day ORDER BY day, title ASC",
                 new String[] {start_date}
         );
         c.moveToFirst();
