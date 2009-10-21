@@ -188,7 +188,7 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     private Cursor doWeekSql(String start_date) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT time_entries._id AS _id, title, strftime('%w', start_time) AS day,"
+                "SELECT time_entries._id AS _id, title, strftime('%w', start_time) AS day, date(start_time) AS start_date,"
                 + " sum((strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0) AS duration"
                 + " FROM time_entries, tasks"
                 + " WHERE tasks._id = time_entries.task_id"

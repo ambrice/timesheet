@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Timesheet</string>
+    <string name="task_list_activity">Tasks</string>
+    <string name="task_edit_activity">Edit Task</string>
+    <string name="time_list_activity">Time Entries</string>
+    <string name="time_edit_activity">Time Entry Edit</string>
     <string name="task_prompt">Select a Task:</string>
     <string name="help_summary">
         <b>Welcome to Timesheet!</b>  To start, add some tasks to Timesheet.

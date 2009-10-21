@@ -46,6 +46,9 @@ public class TimeEntriesActivity extends TabActivity
         Vector<Vector<HashMap<String, String>>> m_data = new Vector<Vector<HashMap<String,String>>>();
         Vector<HashMap<String, String>> m_totals = new Vector<HashMap<String, String>>();
 
+        private final String DAY_LABEL[] = 
+            new String[] {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
         public TimeEntriesWeeklyData(TimesheetDatabase db, int year, int month, int day) {
             m_db = db;
             m_year = year;
@@ -107,6 +110,26 @@ public class TimeEntriesActivity extends TabActivity
         public Vector<HashMap<String, String>> totals() {
             return m_totals;
         }
+
+        public String[] headers() {
+            String[] headers = new String[7];
+            Calendar c = Calendar.getInstance();
+            c.set(m_year, m_month - 1, m_day);
+
+            // Rewind the calendar to Monday
+            while (c.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+                c.add(Calendar.DAY_OF_YEAR, -1);
+            }
+
+            for (int i=0; i < 7; ++i) {
+                headers[i] = String.format("%04d-%02d-%02d - %s",
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), 
+                    DAY_LABEL[c.get(Calendar.DAY_OF_WEEK) - 1]);
+                c.add(Calendar.DAY_OF_YEAR, 1);
+            }
+
+            return headers;
+        }
     }
 
     TimeEntriesWeeklyData m_week_data;
@@ -122,7 +145,6 @@ public class TimeEntriesActivity extends TabActivity
     public static final int ADD_TIME_ENTRY_MENU_ITEM    = Menu.FIRST;
     public static final int DELETE_TIME_ENTRY_MENU_ITEM = Menu.FIRST + 1;
     public static final int EDIT_TIME_ENTRY_MENU_ITEM   = Menu.FIRST + 2;
-    public static final int LIST_TASKS_MENU_ITEM        = Menu.FIRST + 3;
 
     private static final int SELECT_DAY_DIALOG_ID = 0;
     private static final int SELECT_WEEK_DIALOG_ID = 1;
@@ -230,8 +252,7 @@ public class TimeEntriesActivity extends TabActivity
         }
 
         //MergeAdapter(Context ctx, int header_layout_id, int header_view_id, Adapter[] adapter_list, String[] header_list)
-        m_merge_adapter = new MergeAdapter(this, R.layout.header, R.id.header, m_week_adapters,
-                new String[] {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"});
+        m_merge_adapter = new MergeAdapter(this, R.layout.header, R.id.header, m_week_adapters, m_week_data.headers());
         week_list.setAdapter(m_merge_adapter);
         week_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
         week_list.setItemsCanFocus(false);
@@ -276,8 +297,7 @@ public class TimeEntriesActivity extends TabActivity
     public boolean onCreateOptionsMenu(Menu menu) 
     {
         boolean result = super.onCreateOptionsMenu(menu);
-        menu.add(Menu.NONE, ADD_TIME_ENTRY_MENU_ITEM, Menu.NONE, "Add Time Entry");
-        menu.add(Menu.NONE, LIST_TASKS_MENU_ITEM, Menu.NONE, "List Tasks");
+        menu.add(Menu.NONE, ADD_TIME_ENTRY_MENU_ITEM, Menu.NONE, "Add Time Entry").setIcon(android.R.drawable.ic_menu_add);
         return result;
     }
 
@@ -287,9 +307,6 @@ public class TimeEntriesActivity extends TabActivity
         switch (item.getItemId()) {
             case ADD_TIME_ENTRY_MENU_ITEM:
                 addTimeEntry();
-                return true;
-            case LIST_TASKS_MENU_ITEM:
-                listTasks();
                 return true;
         }
         return false;
@@ -311,6 +328,9 @@ public class TimeEntriesActivity extends TabActivity
             case DELETE_TIME_ENTRY_MENU_ITEM:
                 m_db.deleteTimeEntry(info.id);
                 m_day_cursor.requery();
+                m_week_data.requery();
+                m_merge_adapter.notifyDataSetChanged();
+                m_totals_adapter.notifyDataSetChanged();
                 return true;
             case EDIT_TIME_ENTRY_MENU_ITEM:
                 Intent i = new Intent(this, TimeEntryEditActivity.class);
@@ -341,11 +361,17 @@ public class TimeEntriesActivity extends TabActivity
             case ACTIVITY_CREATE:
                 if (resultCode == RESULT_OK) {
                     m_day_cursor.requery();
+                    m_week_data.requery();
+                    m_merge_adapter.notifyDataSetChanged();
+                    m_totals_adapter.notifyDataSetChanged();
                 }
                 break;
             case ACTIVITY_EDIT:
                 if (resultCode == RESULT_OK) {
                     m_day_cursor.requery();
+                    m_week_data.requery();
+                    m_merge_adapter.notifyDataSetChanged();
+                    m_totals_adapter.notifyDataSetChanged();
                 }
                 break;
         }

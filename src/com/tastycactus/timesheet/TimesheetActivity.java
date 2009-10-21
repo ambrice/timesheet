@@ -75,8 +75,8 @@ public class TimesheetActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
-        menu.add(Menu.NONE, ADD_TASK_MENU_ITEM, Menu.NONE, "Add Task");
-        menu.add(Menu.NONE, LIST_ENTRIES_MENU_ITEM, Menu.NONE, "List Entries");
+        menu.add(Menu.NONE, ADD_TASK_MENU_ITEM, Menu.NONE, "Add Task").setIcon(android.R.drawable.ic_menu_add);
+        menu.add(Menu.NONE, LIST_ENTRIES_MENU_ITEM, Menu.NONE, "List Entries").setIcon(android.R.drawable.ic_menu_info_details);
         return result;
     }
 

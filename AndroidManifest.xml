@@ -4,19 +4,20 @@
       android:versionCode="1"
       android:versionName="1.0">
     <application android:label="@string/app_name"
-            android:debuggable="true">
+          android:icon="@drawable/clock">
         <activity android:name=".TimesheetActivity"
-                  android:label="@string/app_name">
+              android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".TaskEditActivity"
-            android:label="@string/app_name"/>
+              android:label="@string/task_edit_activity" />
         <activity android:name=".TimeEntriesActivity"
-            android:label="@string/app_name"/>
+              android:label="@string/time_list_activity" />
         <activity android:name=".TimeEntryEditActivity"
-            android:label="@string/app_name"/>
+              android:label="@string/time_edit_activity" />
     </application>
+    <uses-sdk android:minSdkVersion="3" />
 </manifest> 
