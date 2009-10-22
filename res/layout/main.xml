@@ -14,5 +14,6 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:text="@string/help_summary"
+        android:textSize="16dip"
         />
 </LinearLayout>

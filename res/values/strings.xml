@@ -7,7 +7,8 @@
     <string name="time_edit_activity">Time Entry Edit</string>
     <string name="task_prompt">Select a Task:</string>
     <string name="help_summary">
-        <b>Welcome to Timesheet!</b>  To start, add some tasks to Timesheet.
+        \n<b>Welcome to Timesheet!</b>\n\n
+        To start, add some tasks to Timesheet.
         Tasks can be billable tasks such as "Project Documentation" or
         unbillable tasks such as "Lunch".  Use the "Add Task" menu 
         option to add a task.\n
