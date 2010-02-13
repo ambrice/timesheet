@@ -32,8 +32,10 @@ public class TimesheetActivity extends ListActivity {
     public static final int ADD_TASK_MENU_ITEM     = Menu.FIRST;
     public static final int DELETE_TASK_MENU_ITEM  = Menu.FIRST + 1;
     public static final int LIST_ENTRIES_MENU_ITEM = Menu.FIRST + 2;
+    public static final int EDIT_TASK_MENU_ITEM    = Menu.FIRST + 3;
 
     private static final int ACTIVITY_CREATE = 0;
+    private static final int ACTIVITY_EDIT   = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,6 +108,7 @@ public class TimesheetActivity extends ListActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(Menu.NONE, EDIT_TASK_MENU_ITEM, Menu.NONE, "Edit Task");
         menu.add(Menu.NONE, DELETE_TASK_MENU_ITEM, Menu.NONE, "Delete Task");
     }
 
@@ -113,6 +116,11 @@ public class TimesheetActivity extends ListActivity {
     public boolean onContextItemSelected(MenuItem item) {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
         switch (item.getItemId()) {
+            case EDIT_TASK_MENU_ITEM:
+                Intent i = new Intent(this, TaskEditActivity.class);
+                startActivityForResult(i, ACTIVITY_EDIT);
+                i.putExtra("_id", info.id);
+                return true;
             case DELETE_TASK_MENU_ITEM:
                 m_db.deleteTask(info.id);
                 m_task_cursor.requery();
@@ -134,12 +142,8 @@ public class TimesheetActivity extends ListActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch(requestCode) {
-            case ACTIVITY_CREATE:
-                if (resultCode == RESULT_OK) {
-                    m_task_cursor.requery();
-                }
-                break;
+        if (resultCode == RESULT_OK) {
+            m_task_cursor.requery();
         }
     }
 

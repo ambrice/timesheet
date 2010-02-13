@@ -71,6 +71,13 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         return c;
     }
 
+    public Cursor getTask(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.query("tasks", new String[] {"_id", "title", "billable"}, "_id = ?", new String[] {Long.toString(id)}, null, null, null);
+        c.moveToFirst();
+        return c;
+    }
+
     public void newTask(String title, boolean billable) {
         ContentValues cv = new ContentValues();
 
@@ -96,6 +103,17 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
             }
         }
         c.close();
+    }
+
+    public void updateTask(long id, String title, boolean billable) {
+        ContentValues cv = new ContentValues();
+        cv.put("title", title);
+        cv.put("billable", billable);
+        try {
+            getWritableDatabase().update("tasks", cv, "_id = ?", new String[] {Long.toString(id)});
+        } catch (SQLException e) {
+            Log.e("Error updating task", e.toString());
+        }
     }
 
     public void deleteTask(long task_id) {
