@@ -33,6 +33,7 @@ public class TimesheetActivity extends ListActivity {
     public static final int DELETE_TASK_MENU_ITEM  = Menu.FIRST + 1;
     public static final int LIST_ENTRIES_MENU_ITEM = Menu.FIRST + 2;
     public static final int EDIT_TASK_MENU_ITEM    = Menu.FIRST + 3;
+    public static final int PREFERENCES_MENU_ITEM  = Menu.FIRST + 4;
 
     private static final int ACTIVITY_CREATE = 0;
     private static final int ACTIVITY_EDIT   = 1;
@@ -77,8 +78,12 @@ public class TimesheetActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
-        menu.add(Menu.NONE, ADD_TASK_MENU_ITEM, Menu.NONE, "Add Task").setIcon(android.R.drawable.ic_menu_add);
-        menu.add(Menu.NONE, LIST_ENTRIES_MENU_ITEM, Menu.NONE, "List Entries").setIcon(android.R.drawable.ic_menu_info_details);
+        menu.add(Menu.NONE, ADD_TASK_MENU_ITEM, Menu.NONE, "Add Task")
+            .setIcon(android.R.drawable.ic_menu_add);
+        menu.add(Menu.NONE, LIST_ENTRIES_MENU_ITEM, Menu.NONE, "List Entries")
+            .setIcon(android.R.drawable.ic_menu_info_details);
+        menu.add(Menu.NONE, PREFERENCES_MENU_ITEM, Menu.NONE, "Preferences")
+            .setIcon(android.R.drawable.ic_menu_preferences);
         return result;
     }
 
@@ -100,6 +105,9 @@ public class TimesheetActivity extends ListActivity {
                 return true;
             case LIST_ENTRIES_MENU_ITEM:
                 listEntries();
+                return true;
+            case PREFERENCES_MENU_ITEM:
+                preferences();
                 return true;
         }
         return false;
@@ -136,6 +144,11 @@ public class TimesheetActivity extends ListActivity {
 
     private void listEntries() {
         Intent i = new Intent(this, TimeEntriesActivity.class);
+        startActivity(i);
+    }
+
+    private void preferences() {
+        Intent i = new Intent(this, TimesheetPreferences.class);
         startActivity(i);
     }
 

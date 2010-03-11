@@ -10,8 +10,13 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TabActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+
+import android.preference.PreferenceManager;
+
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -40,7 +45,8 @@ public class TimeEntriesActivity extends TabActivity
     class TimeEntriesWeeklyData 
     {
         TimesheetDatabase m_db;
-        int m_year, m_month, m_day;
+        int m_year, m_month, m_day, m_start_of_week;
+        String[] m_headers;
 
         // In perl: $data[$day][$i] = { _id => $id, title => $title, duration => $duration }
         Vector<Vector<HashMap<String, String>>> m_data = new Vector<Vector<HashMap<String,String>>>();
@@ -49,14 +55,17 @@ public class TimeEntriesActivity extends TabActivity
         private final String DAY_LABEL[] = 
             new String[] {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
-        public TimeEntriesWeeklyData(TimesheetDatabase db, int year, int month, int day) {
+        public TimeEntriesWeeklyData(TimesheetDatabase db, int start_of_week, int year, int month, int day) {
             m_db = db;
             m_year = year;
             m_month = month;
             m_day = day;
+            m_start_of_week = start_of_week;
             for (int i=0; i < 7; ++i) {
                 m_data.add(i, new Vector<HashMap<String, String>>());
             }
+            m_headers = new String[7];
+            adjustDate();
             requery();
         }
 
@@ -64,6 +73,21 @@ public class TimeEntriesActivity extends TabActivity
             m_year = year;
             m_month = month;
             m_day = day;
+            adjustDate();
+        }
+
+        private void adjustDate() {
+            Calendar c = Calendar.getInstance();
+            c.set(m_year, m_month - 1, m_day);
+
+            // Rewind the calendar to the start of the week
+            while (c.get(Calendar.DAY_OF_WEEK) != m_start_of_week) {
+                c.add(Calendar.DAY_OF_YEAR, -1);
+            }
+
+            m_year = c.get(Calendar.YEAR);
+            m_month = c.get(Calendar.MONTH) + 1;
+            m_day = c.get(Calendar.DAY_OF_MONTH);
         }
 
         public void requery() {
@@ -73,6 +97,7 @@ public class TimeEntriesActivity extends TabActivity
             m_totals.clear();
 
             Cursor c = m_db.getWeekEntries(m_year, m_month, m_day);
+            Log.i("Timesheet", String.format("getWeekEntries returned %d rows", c.getCount()));
 
             HashMap<String, Float> total_map = new HashMap<String, Float>();
             while (!c.isAfterLast()) {
@@ -83,6 +108,7 @@ public class TimeEntriesActivity extends TabActivity
                 row_data.put("title", title);
                 float duration = c.getFloat(c.getColumnIndex("duration"));
                 row_data.put("duration", String.format("%1.2f", duration));
+                Log.i("Timesheet", "Adding row " + c.getString(c.getColumnIndex("day")) + " " + row_data.get("title") + " = " + row_data.get("duration"));
                 m_data.get(day).add(row_data);
 
                 // Track the total durations
@@ -101,9 +127,11 @@ public class TimeEntriesActivity extends TabActivity
                 m_totals.add(row);
             }
             c.close();
+            headers();
         }
 
-        public Vector<HashMap<String, String>> entries(int day) {
+        public Vector<HashMap<String, String>> entries(int idx) {
+            int day = (idx + m_start_of_week - 1) % 7;
             return m_data.get(day);
         }
 
@@ -112,23 +140,17 @@ public class TimeEntriesActivity extends TabActivity
         }
 
         public String[] headers() {
-            String[] headers = new String[7];
             Calendar c = Calendar.getInstance();
             c.set(m_year, m_month - 1, m_day);
 
-            // Rewind the calendar to Monday
-            while (c.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-                c.add(Calendar.DAY_OF_YEAR, -1);
-            }
-
             for (int i=0; i < 7; ++i) {
-                headers[i] = String.format("%04d-%02d-%02d - %s",
+                m_headers[i] = String.format("%04d-%02d-%02d - %s",
                     c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), 
                     DAY_LABEL[c.get(Calendar.DAY_OF_WEEK) - 1]);
                 c.add(Calendar.DAY_OF_YEAR, 1);
             }
 
-            return headers;
+            return m_headers;
         }
     }
 
@@ -141,6 +163,7 @@ public class TimeEntriesActivity extends TabActivity
     MergeAdapter m_merge_adapter;
     SimpleAdapter m_totals_adapter;
     Button m_day_button, m_week_button;
+    SharedPreferences m_prefs;
 
     public static final int ADD_TIME_ENTRY_MENU_ITEM    = Menu.FIRST;
     public static final int DELETE_TIME_ENTRY_MENU_ITEM = Menu.FIRST + 1;
@@ -185,6 +208,10 @@ public class TimeEntriesActivity extends TabActivity
         m_tab_host.setCurrentTab(0);
 
         m_db = new TimesheetDatabase(this);
+
+        m_prefs=PreferenceManager.getDefaultSharedPreferences(this);
+        //checkbox.setText(new Boolean(prefs.getBoolean("checkbox", false)).toString());
+        //ringtone.setText(prefs.getString("ringtone", "<unset>"));
 
         setupDayTab();
         setupWeekTab();
@@ -235,17 +262,14 @@ public class TimeEntriesActivity extends TabActivity
     protected void setupWeekTab() 
     {
         final Calendar c = Calendar.getInstance();
-        m_week_data = new TimeEntriesWeeklyData(m_db,
+        m_week_data = new TimeEntriesWeeklyData(m_db, new Integer(m_prefs.getString("week_start", "2")),
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
 
         ListView week_list = (ListView) findViewById(R.id.entries_byweek);
 
         for (int i=0; i < 7; ++i) {
-            // The weeks in sqlite start on Monday, but Sunday is day 0, so the week
-            // actually goes from day 1 to day 6, then day 0
-            int day = i == 6 ? 0 : i + 1;
             m_week_adapters[i] = new SimpleAdapter(this,
-                    m_week_data.entries(day),
+                    m_week_data.entries(i),
                     R.layout.week_entry,
                     new String[] {"title", "duration"},
                     new int[] {R.id.week_entry_title, R.id.week_entry_duration});
@@ -345,12 +369,6 @@ public class TimeEntriesActivity extends TabActivity
     {
         Intent i = new Intent(this, TimeEntryEditActivity.class);
         startActivityForResult(i, ACTIVITY_CREATE);
-    }
-
-    private void listTasks()
-    {
-        Intent i = new Intent(this, TimesheetActivity.class);
-        startActivity(i);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data)

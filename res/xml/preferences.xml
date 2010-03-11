@@ -1,0 +1,10 @@
+<PreferenceScreen 
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="week_start"
+        android:title="Start of Week"
+        android:summary="Select which day starts the week"
+        android:entries="@array/days"
+        android:entryValues="@array/days_index"
+        android:dialogTitle="Week starts on" />
+</PreferenceScreen>

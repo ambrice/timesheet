@@ -204,6 +204,7 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     }
 
     private Cursor doWeekSql(String start_date) {
+        Log.i("Timesheet", "doWeekSql " + start_date);
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
                 "SELECT time_entries._id AS _id, title, strftime('%w', start_time) AS day, date(start_time) AS start_date,"
@@ -211,16 +212,13 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
                 + " FROM time_entries, tasks"
                 + " WHERE tasks._id = time_entries.task_id"
                 + " AND tasks.billable = 1"
-                + " AND strftime('%Y%W', start_time) = strftime('%Y%W', ?)"
+                + " AND date(start_time) >= ?"
+                + " AND date(start_time) < date(?,'+7 days')"
                 + " GROUP BY title, day ORDER BY day, title ASC",
-                new String[] {start_date}
+                new String[] {start_date, start_date}
         );
         c.moveToFirst();
         return c;
-    }
-
-    public Cursor getWeekEntries() {
-        return doWeekSql(getSqlDate());
     }
 
     public Cursor getWeekEntries(int year, int month, int day) {
