@@ -1,5 +1,5 @@
 /***
- * Copyright (c) 2009 Tasty Cactus Software, LLC
+ * Copyright (c) 2009-2010 Tasty Cactus Software, LLC
  * 
  * All rights reserved.
  */
@@ -204,14 +204,13 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     }
 
     private Cursor doWeekSql(String start_date) {
-        Log.i("Timesheet", "doWeekSql " + start_date);
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT time_entries._id AS _id, title, strftime('%w', start_time) AS day, date(start_time) AS start_date,"
+                "SELECT time_entries._id AS _id, title, billable, strftime('%w', start_time) AS day,"
+                + " date(start_time) AS start_date,"
                 + " sum((strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0) AS duration"
                 + " FROM time_entries, tasks"
                 + " WHERE tasks._id = time_entries.task_id"
-                + " AND tasks.billable = 1"
                 + " AND date(start_time) >= ?"
                 + " AND date(start_time) < date(?,'+7 days')"
                 + " GROUP BY title, day ORDER BY day, title ASC",
@@ -289,5 +288,21 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         return String.format("%04d-%02d-%02d %02d:%02d", 
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), 
                 c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+    }
+
+    public Cursor getTimeEntries(String start_date, String end_date) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT title, billable, start_time, end_time,"
+                + " (strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0 AS duration"
+                + " FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id"
+                + " AND date(start_time) >= ?"
+                + " AND date(start_time) <= ?"
+                + " ORDER BY start_time ASC",
+                new String[] {start_date, end_date}
+        );
+        c.moveToFirst();
+        return c;
     }
 }

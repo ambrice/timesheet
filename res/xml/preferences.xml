@@ -7,4 +7,9 @@
         android:entries="@array/days"
         android:entryValues="@array/days_index"
         android:dialogTitle="Week starts on" />
+    <CheckBoxPreference
+        android:key="weekly_billable_only"
+        android:title="Show Only Billable Tasks"
+        android:summaryOff="All tasks are shown in the weekly view and exported to CSV"
+        android:summaryOn="Only billable tasks shown in the weekly view and exported to CSV" />
 </PreferenceScreen>

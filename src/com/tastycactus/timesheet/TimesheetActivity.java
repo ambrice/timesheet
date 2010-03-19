@@ -8,9 +8,12 @@ package com.tastycactus.timesheet;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+
+import android.preference.PreferenceManager;
 
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -63,6 +66,16 @@ public class TimesheetActivity extends ListActivity {
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         registerForContextMenu(getListView());
+
+        // Set preference defaults if they haven't been set
+        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
+        if (!prefs.contains("weekly_billable_only")) {
+            prefs.edit().putBoolean("weekly_billable_only", true);
+        }
+        if (!prefs.contains("week_start")) {
+            prefs.edit().putString("week_start", "2");
+        }
+        prefs.edit().commit();
 
         updateCheckedItem();
     }

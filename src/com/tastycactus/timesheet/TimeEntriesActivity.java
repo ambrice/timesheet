@@ -9,14 +9,15 @@ package com.tastycactus.timesheet;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TabActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+
 import android.database.Cursor;
 import android.os.Bundle;
 
 import android.preference.PreferenceManager;
 
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -47,6 +48,7 @@ public class TimeEntriesActivity extends TabActivity
         TimesheetDatabase m_db;
         int m_year, m_month, m_day, m_start_of_week;
         String[] m_headers;
+        boolean m_weekly_billable_only;
 
         // In perl: $data[$day][$i] = { _id => $id, title => $title, duration => $duration }
         Vector<Vector<HashMap<String, String>>> m_data = new Vector<Vector<HashMap<String,String>>>();
@@ -55,16 +57,21 @@ public class TimeEntriesActivity extends TabActivity
         private final String DAY_LABEL[] = 
             new String[] {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
-        public TimeEntriesWeeklyData(TimesheetDatabase db, int start_of_week, int year, int month, int day) {
+        public TimeEntriesWeeklyData(Context ctx, TimesheetDatabase db, int year, int month, int day) {
             m_db = db;
             m_year = year;
             m_month = month;
             m_day = day;
-            m_start_of_week = start_of_week;
             for (int i=0; i < 7; ++i) {
                 m_data.add(i, new Vector<HashMap<String, String>>());
             }
+
             m_headers = new String[7];
+
+            SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(ctx);
+            m_start_of_week = new Integer(prefs.getString("week_start", "2"));
+            m_weekly_billable_only = prefs.getBoolean("weekly_billable_only", true);
+
             adjustDate();
             requery();
         }
@@ -97,25 +104,26 @@ public class TimeEntriesActivity extends TabActivity
             m_totals.clear();
 
             Cursor c = m_db.getWeekEntries(m_year, m_month, m_day);
-            Log.i("Timesheet", String.format("getWeekEntries returned %d rows", c.getCount()));
 
             HashMap<String, Float> total_map = new HashMap<String, Float>();
             while (!c.isAfterLast()) {
                 HashMap<String, String> row_data = new HashMap<String, String>();
-                int day = c.getInt(c.getColumnIndex("day"));
-                row_data.put("_id", c.getString(c.getColumnIndex("_id")));
-                String title = c.getString(c.getColumnIndex("title"));
-                row_data.put("title", title);
-                float duration = c.getFloat(c.getColumnIndex("duration"));
-                row_data.put("duration", String.format("%1.2f", duration));
-                Log.i("Timesheet", "Adding row " + c.getString(c.getColumnIndex("day")) + " " + row_data.get("title") + " = " + row_data.get("duration"));
-                m_data.get(day).add(row_data);
+                int billable = c.getInt(c.getColumnIndex("billable"));
+                if (billable == 1 || !m_weekly_billable_only) {
+                    int day = c.getInt(c.getColumnIndex("day"));
+                    row_data.put("_id", c.getString(c.getColumnIndex("_id")));
+                    String title = c.getString(c.getColumnIndex("title"));
+                    row_data.put("title", title);
+                    float duration = c.getFloat(c.getColumnIndex("duration"));
+                    row_data.put("duration", String.format("%1.2f", duration));
+                    m_data.get(day).add(row_data);
 
-                // Track the total durations
-                if (total_map.containsKey(title)) {
-                    total_map.put(title, total_map.get(title) + duration);
-                } else {
-                    total_map.put(title, duration);
+                    // Track the total durations
+                    if (total_map.containsKey(title)) {
+                        total_map.put(title, total_map.get(title) + duration);
+                    } else {
+                        total_map.put(title, duration);
+                    }
                 }
 
                 c.moveToNext();
@@ -163,11 +171,11 @@ public class TimeEntriesActivity extends TabActivity
     MergeAdapter m_merge_adapter;
     SimpleAdapter m_totals_adapter;
     Button m_day_button, m_week_button;
-    SharedPreferences m_prefs;
 
     public static final int ADD_TIME_ENTRY_MENU_ITEM    = Menu.FIRST;
     public static final int DELETE_TIME_ENTRY_MENU_ITEM = Menu.FIRST + 1;
     public static final int EDIT_TIME_ENTRY_MENU_ITEM   = Menu.FIRST + 2;
+    public static final int EXPORT_MENU_ITEM            = Menu.FIRST + 3;
 
     private static final int SELECT_DAY_DIALOG_ID = 0;
     private static final int SELECT_WEEK_DIALOG_ID = 1;
@@ -208,10 +216,6 @@ public class TimeEntriesActivity extends TabActivity
         m_tab_host.setCurrentTab(0);
 
         m_db = new TimesheetDatabase(this);
-
-        m_prefs=PreferenceManager.getDefaultSharedPreferences(this);
-        //checkbox.setText(new Boolean(prefs.getBoolean("checkbox", false)).toString());
-        //ringtone.setText(prefs.getString("ringtone", "<unset>"));
 
         setupDayTab();
         setupWeekTab();
@@ -262,7 +266,7 @@ public class TimeEntriesActivity extends TabActivity
     protected void setupWeekTab() 
     {
         final Calendar c = Calendar.getInstance();
-        m_week_data = new TimeEntriesWeeklyData(m_db, new Integer(m_prefs.getString("week_start", "2")),
+        m_week_data = new TimeEntriesWeeklyData(this, m_db, 
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
 
         ListView week_list = (ListView) findViewById(R.id.entries_byweek);
@@ -275,7 +279,6 @@ public class TimeEntriesActivity extends TabActivity
                     new int[] {R.id.week_entry_title, R.id.week_entry_duration});
         }
 
-        //MergeAdapter(Context ctx, int header_layout_id, int header_view_id, Adapter[] adapter_list, String[] header_list)
         m_merge_adapter = new MergeAdapter(this, R.layout.header, R.id.header, m_week_adapters, m_week_data.headers());
         week_list.setAdapter(m_merge_adapter);
         week_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
@@ -322,15 +325,22 @@ public class TimeEntriesActivity extends TabActivity
     {
         boolean result = super.onCreateOptionsMenu(menu);
         menu.add(Menu.NONE, ADD_TIME_ENTRY_MENU_ITEM, Menu.NONE, "Add Time Entry").setIcon(android.R.drawable.ic_menu_add);
+        menu.add(Menu.NONE, EXPORT_MENU_ITEM, Menu.NONE, "Export to CSV").setIcon(android.R.drawable.ic_menu_save);
         return result;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) 
     {
+        Intent i;
         switch (item.getItemId()) {
             case ADD_TIME_ENTRY_MENU_ITEM:
-                addTimeEntry();
+                i = new Intent(this, TimeEntryEditActivity.class);
+                startActivityForResult(i, ACTIVITY_CREATE);
+                return true;
+            case EXPORT_MENU_ITEM:
+                i = new Intent(this, ExportActivity.class);
+                startActivityForResult(i, ACTIVITY_CREATE);
                 return true;
         }
         return false;
@@ -363,12 +373,6 @@ public class TimeEntriesActivity extends TabActivity
                 return true;
         }
         return false;
-    }
-
-    public void addTimeEntry()
-    {
-        Intent i = new Intent(this, TimeEntryEditActivity.class);
-        startActivityForResult(i, ACTIVITY_CREATE);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data)

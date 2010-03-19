@@ -5,6 +5,7 @@
     <string name="task_edit_activity">Edit Task</string>
     <string name="time_list_activity">Time Entries</string>
     <string name="time_edit_activity">Time Entry Edit</string>
+    <string name="export_activity">Export to CSV</string>
     <string name="task_prompt">Select a Task:</string>
     <string name="help_summary">
         \n<b>Welcome to Timesheet!</b>\n\n
