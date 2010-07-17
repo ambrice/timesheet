@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/widget_bg_normal"
+    >
+    <ImageButton
+        android:id="@+id/select_task"
+        android:layout_alignParentLeft="true"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:src="@drawable/vert_toggle_on"
+    />
+    <TextView
+        android:id="@+id/current_task"
+        android:layout_toRightOf="@id/select_task"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="3dip"
+        android:textSize="24dip"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:singleLine="true"
+        android:ellipsize="end"
+    />
+    <ImageButton
+        android:id="@+id/next_task"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:src="@drawable/ic_media_next"
+    />
+</RelativeLayout>

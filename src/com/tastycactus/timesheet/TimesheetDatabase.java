@@ -78,6 +78,13 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         return c;
     }
 
+    public String getTaskName(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.query("tasks", new String[] {"title"}, "_id = ?", new String[] {Long.toString(id)}, null, null, null);
+        c.moveToFirst();
+        return c.getString(0);
+    }
+
     public void newTask(String title, boolean billable) {
         ContentValues cv = new ContentValues();
 
@@ -275,6 +282,22 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         }
         c.moveToFirst();
         return c.getLong(0);
+    }
+
+    public String getCurrentTaskName() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT title"
+                + " FROM time_entries, tasks"
+                + " WHERE tasks._id = time_entries.task_id"
+                + " AND time_entries.end_time IS NULL",
+                new String[] {}
+        );
+        if (c.getCount() == 0) {
+            return "";
+        }
+        c.moveToFirst();
+        return c.getString(0);
     }
 
     public static String getSqlDate() {
