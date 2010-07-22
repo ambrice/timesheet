@@ -1,7 +1,18 @@
-/***
- * Copyright (c) 2009 Tasty Cactus Software, LLC
+/*
+ * Copyright (c) 2009-2010 Tasty Cactus Software, LLC
  * 
- * All rights reserved.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Aaron Brice <aaron@tastycactus.com>
+ *
  */
 
 package com.tastycactus.timesheet;
@@ -38,6 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import com.tastycactus.timesheet.TimesheetAppWidgetProvider;
 import com.tastycactus.timesheet.TimesheetDatabase;
 import com.tastycactus.timesheet.MergeAdapter;
 
@@ -365,6 +377,9 @@ public class TimeEntriesActivity extends TabActivity
                 m_week_data.requery();
                 m_merge_adapter.notifyDataSetChanged();
                 m_totals_adapter.notifyDataSetChanged();
+                // Update the App Widget in case we deleted the currently-active
+                // time entry
+                startService(new Intent(this, TimesheetAppWidgetProvider.UpdateService.class));
                 return true;
             case EDIT_TIME_ENTRY_MENU_ITEM:
                 Intent i = new Intent(this, TimeEntryEditActivity.class);

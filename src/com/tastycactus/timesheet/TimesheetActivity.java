@@ -1,7 +1,18 @@
-/***
- * Copyright (c) 2009 Tasty Cactus Software, LLC
+/*
+ * Copyright (c) 2009-2010 Tasty Cactus Software, LLC
  * 
- * All rights reserved.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Aaron Brice <aaron@tastycactus.com>
+ *
  */
 
 package com.tastycactus.timesheet;
@@ -25,6 +36,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import com.tastycactus.timesheet.TimesheetAppWidgetProvider;
 import com.tastycactus.timesheet.TimesheetDatabase;
 
 public class TimesheetActivity extends ListActivity {
@@ -108,6 +120,8 @@ public class TimesheetActivity extends ListActivity {
         } else {
             m_db.changeTask(id);
         }
+        // Update the App Widget
+        startService(new Intent(this, TimesheetAppWidgetProvider.UpdateService.class));
     }
 
     @Override
@@ -145,6 +159,8 @@ public class TimesheetActivity extends ListActivity {
             case DELETE_TASK_MENU_ITEM:
                 m_db.deleteTask(info.id);
                 m_task_cursor.requery();
+                // Update the App Widget, if necessary
+                startService(new Intent(this, TimesheetAppWidgetProvider.UpdateService.class));
                 return true;
         }
         return false;
@@ -170,6 +186,8 @@ public class TimesheetActivity extends ListActivity {
 
         if (resultCode == RESULT_OK) {
             m_task_cursor.requery();
+            // Update the App Widget, if necessary
+            startService(new Intent(this, TimesheetAppWidgetProvider.UpdateService.class));
         }
     }
 

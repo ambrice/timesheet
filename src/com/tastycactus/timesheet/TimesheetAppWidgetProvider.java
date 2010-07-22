@@ -1,7 +1,18 @@
-/***
+/*
  * Copyright (c) 2010 Tasty Cactus Software, LLC
  * 
- * All rights reserved.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Aaron Brice <aaron@tastycactus.com>
+ *
  */
 
 package com.tastycactus.timesheet;
@@ -75,8 +86,14 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
         private RemoteViews buildUpdate(Context context) {
             long task_id = m_prefs.getLong("app_task", -1);
             long current_id = m_db.getCurrentTaskId();
-            if (task_id == -1) {
-                task_id = current_id;
+
+            // task_id could be an id that has since been deleted
+            if (task_id == -1 || !m_db.isValidTask(task_id)) {
+                if (current_id == 0) {
+                    task_id = m_db.getFirstTaskId();
+                } else {
+                    task_id = current_id;
+                }
                 SharedPreferences.Editor edit = m_prefs.edit();
                 edit.putLong("app_task", task_id);
                 edit.commit();

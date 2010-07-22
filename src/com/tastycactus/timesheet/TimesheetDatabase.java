@@ -1,7 +1,18 @@
-/***
+/*
  * Copyright (c) 2009-2010 Tasty Cactus Software, LLC
  * 
- * All rights reserved.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Aaron Brice <aaron@tastycactus.com>
+ *
  */
 
 package com.tastycactus.timesheet;
@@ -71,6 +82,11 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         return c;
     }
 
+    public long getFirstTaskId() {
+        Cursor c = getTasks();
+        return c.getLong(0);
+    }
+
     public Cursor getTask(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.query("tasks", new String[] {"_id", "title", "billable"}, "_id = ?", new String[] {Long.toString(id)}, null, null, null);
@@ -81,8 +97,18 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     public String getTaskName(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.query("tasks", new String[] {"title"}, "_id = ?", new String[] {Long.toString(id)}, null, null, null);
-        c.moveToFirst();
-        return c.getString(0);
+        if (c.getCount() > 0) {
+            c.moveToFirst();
+            return c.getString(0);
+        } else {
+            return "";
+        }
+    }
+
+    boolean isValidTask(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.query("tasks", new String[] {"title"}, "_id = ?", new String[] {Long.toString(id)}, null, null, null);
+        return c.getCount() > 0;
     }
 
     public void newTask(String title, boolean billable) {
