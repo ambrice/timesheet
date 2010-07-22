@@ -101,7 +101,7 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
 
             RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
 
-            if (task_id == current_id) {
+            if (task_id == current_id && task_id > 0) {
                 updateViews.setImageViewResource(R.id.select_task, R.drawable.vert_toggle_on);
             } else {
                 updateViews.setImageViewResource(R.id.select_task, R.drawable.vert_toggle_off);
@@ -149,7 +149,7 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
             // current task.  Otherwise, set this to the current task
             long task_id = m_prefs.getLong("app_task", -1);
             long current_id = m_db.getCurrentTaskId();
-            if (task_id == current_id) {
+            if (task_id == current_id && task_id > 0) {
                 m_db.completeCurrentTask();
             } else if (task_id > 0) {
                 m_db.changeTask(task_id);

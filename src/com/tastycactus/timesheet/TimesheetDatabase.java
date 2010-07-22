@@ -84,7 +84,11 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
 
     public long getFirstTaskId() {
         Cursor c = getTasks();
-        return c.getLong(0);
+        if (c.getCount() > 0) {
+            return c.getLong(0);
+        } else {
+            return 0;
+        }
     }
 
     public Cursor getTask(long id) {
