@@ -153,8 +153,8 @@ public class TimesheetActivity extends ListActivity {
         switch (item.getItemId()) {
             case EDIT_TASK_MENU_ITEM:
                 Intent i = new Intent(this, TaskEditActivity.class);
-                startActivityForResult(i, ACTIVITY_EDIT);
                 i.putExtra("_id", info.id);
+                startActivityForResult(i, ACTIVITY_EDIT);
                 return true;
             case DELETE_TASK_MENU_ITEM:
                 m_db.deleteTask(info.id);
