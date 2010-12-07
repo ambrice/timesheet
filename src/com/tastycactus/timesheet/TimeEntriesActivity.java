@@ -126,6 +126,8 @@ public class TimeEntriesActivity extends TabActivity
                     row_data.put("_id", c.getString(c.getColumnIndex("_id")));
                     String title = c.getString(c.getColumnIndex("title"));
                     row_data.put("title", title);
+                    String comment = ": " + c.getString(c.getColumnIndex("comment"));
+                    row_data.put("comment", comment);
                     float duration = c.getFloat(c.getColumnIndex("duration"));
                     row_data.put("duration", String.format("%1.2f", duration));
                     m_data.get(day).add(row_data);
@@ -249,8 +251,8 @@ public class TimeEntriesActivity extends TabActivity
         m_day_ca = new SimpleCursorAdapter(this,
                 R.layout.time_entry, 
                 m_day_cursor,
-                new String[] {"title", "start_time", "end_time"},
-                new int[] {R.id.time_entry_title, R.id.time_entry_start, R.id.time_entry_end});
+                new String[] {"title", "comment", "start_time", "end_time"},
+                new int[] {R.id.time_entry_title, R.id.time_entry_comment, R.id.time_entry_start, R.id.time_entry_end});
         time_entry_list.setAdapter(m_day_ca);
         time_entry_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
 

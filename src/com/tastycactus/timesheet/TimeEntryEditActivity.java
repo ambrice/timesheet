@@ -39,6 +39,7 @@ public class TimeEntryEditActivity extends Activity {
     class TimeEntryData {
         String m_start_date, m_end_date;
         String m_start_time, m_end_time;
+        String m_comment;
         long m_task_id, m_row_id;
 
         public TimeEntryData() {
@@ -47,6 +48,7 @@ public class TimeEntryEditActivity extends Activity {
             m_start_time = formatTime(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
             m_end_date = m_start_date;
             m_end_time = m_start_time;
+            m_comment = "";
             m_task_id = -1;
             m_row_id = -1;
         }
@@ -57,6 +59,7 @@ public class TimeEntryEditActivity extends Activity {
             m_end_date = c.getString(c.getColumnIndex("end_date"));
             m_end_time = c.getString(c.getColumnIndex("end_time"));
             m_task_id = c.getLong(c.getColumnIndex("task_id"));
+            m_comment = c.getString(c.getColumnIndex("comment"));
             m_row_id = row_id;
         }
 
@@ -94,6 +97,10 @@ public class TimeEntryEditActivity extends Activity {
 
         public String end_time() {
             return m_end_time;
+        }
+
+        public String comment() {
+            return m_comment;
         }
 
         public long row() {
@@ -236,12 +243,13 @@ public class TimeEntryEditActivity extends Activity {
                 if (task_id != Spinner.INVALID_ROW_ID) {
                     String start = m_data.start_date() + " " + m_data.start_time();
                     String end = m_data.end_date() + " " + m_data.end_time();
+                    String comment = m_data.comment();
                     if (m_data.row() == -1) {
-                        m_db.newTimeEntry(task_id, start, end);
+                        m_db.newTimeEntry(task_id, comment, start, end);
                     } else if (m_data.row() == m_db.getCurrentId()) {
-                        m_db.updateTimeEntry(m_data.row(), task_id, start);
+                        m_db.updateTimeEntry(m_data.row(), task_id, comment, start);
                     } else {
-                        m_db.updateTimeEntry(m_data.row(), task_id, start, end);
+                        m_db.updateTimeEntry(m_data.row(), task_id, comment, start, end);
                     }
                     setResult(RESULT_OK);
                 } else {
@@ -299,6 +307,5 @@ public class TimeEntryEditActivity extends Activity {
         m_end_date_button.setText(m_data.end_date());
         m_end_time_button.setText(m_data.end_time());
     }
-
 }
 

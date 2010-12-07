@@ -17,6 +17,18 @@
         android:prompt="@string/task_prompt"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Comment:"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        />
+    <EditText
+        android:id="@+id/time_entry_comment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        />
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dip"

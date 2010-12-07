@@ -154,11 +154,12 @@ public class ExportActivity extends Activity {
                         File csvfile = new File(tdir, filename);
                         FileWriter csvwriter = new FileWriter(csvfile);
                         BufferedWriter out = new BufferedWriter(csvwriter);
-                        out.write("Task,Start Time,End Time,Duration\n");
+                        out.write("Task,Comment,Start Time,End Time,Duration\n");
                         while (!c.isAfterLast()) {
                             int billable = c.getInt(c.getColumnIndex("billable"));
                             if (billable == 1 || !m_export_billable_only) {
                                 out.write(c.getString(c.getColumnIndex("title")) + ",");
+                                out.write(c.getString(c.getColumnIndex("comment")) + ",");
                                 out.write(c.getString(c.getColumnIndex("start_time")) + ",");
                                 out.write(c.getString(c.getColumnIndex("end_time")) + ",");
                                 out.write(c.getString(c.getColumnIndex("duration")) + "\n");
