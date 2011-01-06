@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -121,6 +122,7 @@ public class TimeEntryEditActivity extends Activity {
     TimeEntryData m_data;
     Button m_start_date_button, m_end_date_button;
     Button m_start_time_button, m_end_time_button;
+    EditText m_comment_edit;
 
     TimesheetDatabase m_db;
 
@@ -226,6 +228,9 @@ public class TimeEntryEditActivity extends Activity {
             }
         });
 
+        m_comment_edit = (EditText) findViewById(R.id.time_entry_comment);
+        m_comment_edit.setText(m_data.comment());
+
         if (m_data.row() == m_db.getCurrentId()) {
             // For the current task, hide the end date and end time buttons,
             // only start date and time are edittable
@@ -243,7 +248,7 @@ public class TimeEntryEditActivity extends Activity {
                 if (task_id != Spinner.INVALID_ROW_ID) {
                     String start = m_data.start_date() + " " + m_data.start_time();
                     String end = m_data.end_date() + " " + m_data.end_time();
-                    String comment = m_data.comment();
+                    String comment = m_comment_edit.getText().toString();
                     if (m_data.row() == -1) {
                         m_db.newTimeEntry(task_id, comment, start, end);
                     } else if (m_data.row() == m_db.getCurrentId()) {

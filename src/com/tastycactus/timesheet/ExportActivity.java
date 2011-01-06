@@ -17,22 +17,33 @@
 
 package com.tastycactus.timesheet;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+
 import android.database.Cursor;
+
+import android.net.Uri;
+
 import android.os.Bundle;
 import android.os.Environment;
 
 import android.preference.PreferenceManager;
 
 import android.util.Log;
+
 import android.view.View;
+
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedWriter;
@@ -86,6 +97,7 @@ public class ExportActivity extends Activity {
 
     ExportData m_data;
     Button m_start_date_button, m_end_date_button;
+    String m_type, m_default_email;
     boolean m_export_billable_only;
 
     TimesheetDatabase m_db;
@@ -117,10 +129,21 @@ public class ExportActivity extends Activity {
         m_db = new TimesheetDatabase(this);
         m_data = new ExportData();
 
+        Bundle b = getIntent().getExtras();
+        m_type = b.getString("type");
+
         setContentView(R.layout.export);
 
         SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
         m_export_billable_only = prefs.getBoolean("weekly_billable_only", true);
+        m_default_email = prefs.getString("default_email", "");
+
+        TextView title = (TextView) findViewById(R.id.export_title);
+        if (m_type.equals("csv")) {
+            title.setText("Export Time Entries to CSV");
+        } else if (m_type.equals("email")) {
+            title.setText("Email Time Report");
+        }
 
         m_start_date_button = (Button) findViewById(R.id.export_start_date);
         m_start_date_button.setOnClickListener(new View.OnClickListener() {
@@ -140,45 +163,26 @@ public class ExportActivity extends Activity {
 
         Button exportButton = (Button) findViewById(R.id.export_button);
         final Context ctx = this;
-        exportButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                Cursor c = m_db.getTimeEntries(m_data.start_date(), m_data.end_date());
-                try {
-                    File root = Environment.getExternalStorageDirectory();
-                    if (root.canWrite()) {
-                        File tdir = new File(root, "timesheets");
-                        if (!tdir.exists()) {
-                            tdir.mkdir();
-                        }
-                        String filename = "timesheet " + m_data.start_date() + " to " + m_data.end_date() + ".csv";
-                        File csvfile = new File(tdir, filename);
-                        FileWriter csvwriter = new FileWriter(csvfile);
-                        BufferedWriter out = new BufferedWriter(csvwriter);
-                        out.write("Task,Comment,Start Time,End Time,Duration\n");
-                        while (!c.isAfterLast()) {
-                            int billable = c.getInt(c.getColumnIndex("billable"));
-                            if (billable == 1 || !m_export_billable_only) {
-                                out.write(c.getString(c.getColumnIndex("title")) + ",");
-                                out.write(c.getString(c.getColumnIndex("comment")) + ",");
-                                out.write(c.getString(c.getColumnIndex("start_time")) + ",");
-                                out.write(c.getString(c.getColumnIndex("end_time")) + ",");
-                                out.write(c.getString(c.getColumnIndex("duration")) + "\n");
-                            }
-                            c.moveToNext();
-                        }
-                        Toast.makeText(ctx, "Exported time entries to file timesheets/" + filename, Toast.LENGTH_LONG).show();
-                        out.close();
+        if (m_type.equals("csv")) {
+            exportButton.setText("Export");
+            exportButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    if (exportCSV(ctx) != null) {
                         setResult(RESULT_OK);
                         finish();
-                    } else {
-                        Toast.makeText(ctx, "Could not write CSV file to SD Card", Toast.LENGTH_LONG).show();
                     }
-                } catch (IOException e) {
-                    Log.e("Timesheet", "Could not write CSV file: " + e.getMessage());
-                    Toast.makeText(ctx, "Could not write CSV file to SD Card", Toast.LENGTH_LONG).show();
                 }
-            }
-        });
+            });
+        } else if (m_type.equals("email")) {
+            exportButton.setText("Email");
+            exportButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    sendEmail(ctx);
+                    setResult(RESULT_OK);
+                    finish();
+                }
+            });
+        }
 
         Button cancelButton = (Button) findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -217,6 +221,91 @@ public class ExportActivity extends Activity {
     {
         m_start_date_button.setText(m_data.start_date());
         m_end_date_button.setText(m_data.end_date());
+    }
+
+    private String exportCSV(Context ctx)
+    {
+        Cursor c = m_db.getTimeEntries(m_data.start_date(), m_data.end_date());
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            if (root.canWrite()) {
+                File tdir = new File(root, "timesheets");
+                if (!tdir.exists()) {
+                    tdir.mkdir();
+                }
+                String filename = "timesheet " + m_data.start_date() + " to " + m_data.end_date() + ".csv";
+                File csvfile = new File(tdir, filename);
+                FileWriter csvwriter = new FileWriter(csvfile);
+                BufferedWriter out = new BufferedWriter(csvwriter);
+                out.write("Task,Comment,Start Time,End Time,Duration\n");
+                while (!c.isAfterLast()) {
+                    int billable = c.getInt(c.getColumnIndex("billable"));
+                    if (billable == 1 || !m_export_billable_only) {
+                        out.write(c.getString(c.getColumnIndex("title")) + ",");
+                        out.write(c.getString(c.getColumnIndex("comment")) + ",");
+                        out.write(c.getString(c.getColumnIndex("start_time")) + ",");
+                        out.write(c.getString(c.getColumnIndex("end_time")) + ",");
+                        out.write(c.getString(c.getColumnIndex("duration")) + "\n");
+                    }
+                    c.moveToNext();
+                }
+                Toast.makeText(ctx, "Exported time entries to file timesheets/" + filename, Toast.LENGTH_LONG).show();
+                out.close();
+                return csvfile.getAbsolutePath();
+            } else {
+                Toast.makeText(ctx, "Could not write CSV file to SD Card", Toast.LENGTH_LONG).show();
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e("Timesheet", "Could not write CSV file: " + e.getMessage());
+            Toast.makeText(ctx, "Could not write CSV file to SD Card", Toast.LENGTH_LONG).show();
+            return null;
+        }
+    }
+
+    private String getSummaryData() {
+        Cursor c = m_db.getTimeEntries(m_data.start_date(), m_data.end_date());
+        StringBuilder b = new StringBuilder();
+
+        HashMap<String, Float> total_map = new HashMap<String, Float>();
+        while (!c.isAfterLast()) {
+            int billable = c.getInt(c.getColumnIndex("billable"));
+            if (billable == 1 || !m_export_billable_only) {
+                String title = c.getString(c.getColumnIndex("title"));
+                float duration = c.getFloat(c.getColumnIndex("duration"));
+
+                // Track the total durations
+                if (total_map.containsKey(title)) {
+                    total_map.put(title, total_map.get(title) + duration);
+                } else {
+                    total_map.put(title, duration);
+                }
+            }
+
+            c.moveToNext();
+        }
+        for (Map.Entry<String, Float> entry : total_map.entrySet()) {
+            b.append(entry.getKey()).append(": ").append(String.format("%1.2f", entry.getValue())).append(" hours\n");
+        }
+        c.close();
+
+        return b.toString();
+    }
+
+    private void sendEmail(Context ctx)
+    {
+        final String filename = exportCSV(ctx);
+
+        final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+
+        String subject = "Time Summary " + m_data.start_date() + " to " + m_data.end_date();
+
+        emailIntent.setType("text/csv");
+        emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{m_default_email});
+        emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
+        emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, getSummaryData());
+        emailIntent.putExtra(android.content.Intent.EXTRA_STREAM, Uri.parse("file://" + filename));
+        ctx.startActivity(Intent.createChooser(emailIntent, "Send email..."));
     }
 }
 

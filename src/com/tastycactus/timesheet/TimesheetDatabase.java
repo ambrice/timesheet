@@ -29,7 +29,7 @@ import java.util.Calendar;
 
 public class TimesheetDatabase extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "Timesheet";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public TimesheetDatabase(Context ctx) {
         super(ctx, DATABASE_NAME, null, DATABASE_VERSION);
@@ -60,6 +60,23 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
             String[] sqls = new String[] {
                 "ALTER TABLE tasks ADD COLUMN hidden INTEGER",
                 "UPDATE tasks SET hidden = 0"
+            };
+            db.beginTransaction();
+            try {
+                for( String sql : sqls )
+                    db.execSQL(sql);
+                db.setTransactionSuccessful();
+            } catch (SQLException e) {
+                Log.e("Error upgrading Timesheet database tables", e.toString());
+                throw e;
+            } finally {
+                db.endTransaction();
+            }
+        }
+        if (old_version == 2) {
+            String[] sqls = new String[] {
+                "ALTER TABLE time_entries ADD COLUMN comment STRING",
+                "UPDATE time_entries SET comment = ''"
             };
             db.beginTransaction();
             try {

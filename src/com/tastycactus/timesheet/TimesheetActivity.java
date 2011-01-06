@@ -87,6 +87,9 @@ public class TimesheetActivity extends ListActivity {
         if (!prefs.contains("week_start")) {
             prefs.edit().putString("week_start", "2");
         }
+        if (!prefs.contains("default_email")) {
+            prefs.edit().putString("default_email", "");
+        }
         prefs.edit().commit();
 
         updateCheckedItem();

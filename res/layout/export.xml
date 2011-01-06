@@ -5,10 +5,10 @@
     android:layout_height="fill_parent"
     >
     <TextView
+        android:id="@+id/export_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="3dip"
-        android:text="Export Time Entries to CSV"
         android:textAppearance="?android:attr/textAppearanceLarge"
         />
     <View
@@ -89,7 +89,6 @@
             android:id="@+id/export_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Export"
             android:textAppearance="?android:attr/textAppearanceLarge"
             />
         <Button

@@ -190,6 +190,7 @@ public class TimeEntriesActivity extends TabActivity
     public static final int DELETE_TIME_ENTRY_MENU_ITEM = Menu.FIRST + 1;
     public static final int EDIT_TIME_ENTRY_MENU_ITEM   = Menu.FIRST + 2;
     public static final int EXPORT_MENU_ITEM            = Menu.FIRST + 3;
+    public static final int EMAIL_MENU_ITEM             = Menu.FIRST + 4;
 
     private static final int SELECT_DAY_DIALOG_ID = 0;
     private static final int SELECT_WEEK_DIALOG_ID = 1;
@@ -340,6 +341,7 @@ public class TimeEntriesActivity extends TabActivity
         boolean result = super.onCreateOptionsMenu(menu);
         menu.add(Menu.NONE, ADD_TIME_ENTRY_MENU_ITEM, Menu.NONE, "Add Time Entry").setIcon(android.R.drawable.ic_menu_add);
         menu.add(Menu.NONE, EXPORT_MENU_ITEM, Menu.NONE, "Export to CSV").setIcon(android.R.drawable.ic_menu_save);
+        menu.add(Menu.NONE, EMAIL_MENU_ITEM, Menu.NONE, "Send Email").setIcon(android.R.drawable.ic_menu_send);
         return result;
     }
 
@@ -354,6 +356,12 @@ public class TimeEntriesActivity extends TabActivity
                 return true;
             case EXPORT_MENU_ITEM:
                 i = new Intent(this, ExportActivity.class);
+                i.putExtra("type", "csv");
+                startActivityForResult(i, ACTIVITY_CREATE);
+                return true;
+            case EMAIL_MENU_ITEM:
+                i = new Intent(this, ExportActivity.class);
+                i.putExtra("type", "email");
                 startActivityForResult(i, ACTIVITY_CREATE);
                 return true;
         }
