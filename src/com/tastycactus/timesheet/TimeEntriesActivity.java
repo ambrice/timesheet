@@ -252,8 +252,8 @@ public class TimeEntriesActivity extends TabActivity
         m_day_ca = new SimpleCursorAdapter(this,
                 R.layout.time_entry, 
                 m_day_cursor,
-                new String[] {"title", "comment", "start_time", "end_time"},
-                new int[] {R.id.time_entry_title, R.id.time_entry_comment, R.id.time_entry_start, R.id.time_entry_end});
+                new String[] {"title", "comment", "start_time", "end_time", "duration"},
+                new int[] {R.id.time_entry_title, R.id.time_entry_comment, R.id.time_entry_start, R.id.time_entry_end, R.id.time_entry_duration});
         time_entry_list.setAdapter(m_day_ca);
         time_entry_list.setChoiceMode(ListView.CHOICE_MODE_NONE);
 

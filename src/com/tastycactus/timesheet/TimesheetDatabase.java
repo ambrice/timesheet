@@ -195,8 +195,11 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     public Cursor getTimeEntry(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT _id, task_id, comment, date(start_time) AS start_date, strftime('%H:%M', start_time) AS start_time, date(end_time) AS end_date, strftime('%H:%M', end_time) AS end_time FROM time_entries"
-                + " WHERE _id = ? ORDER BY start_time ASC", 
+                "SELECT _id, task_id, comment, date(start_time) AS start_date, strftime('%H:%M', start_time)"
+                + " AS start_time, date(ifnull(end_time, datetime('now', 'localtime'))) AS end_date,"
+                + " strftime('%H:%M', ifnull(end_time, datetime('now', 'localtime'))) AS end_time,"
+                + " round((strftime('%s', ifnull(end_time, datetime('now', 'localtime'))) - strftime('%s', start_time)) / 3600.0, 2) AS duration"
+                + " FROM time_entries WHERE _id = ? ORDER BY start_time ASC", 
                 new String[] {Long.toString(id)}
         );
         c.moveToFirst();
@@ -206,7 +209,10 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
     private Cursor doTimeEntriesSql(String start_date) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
-                "SELECT time_entries._id, title, comment, strftime('%H:%M', start_time) AS start_time, strftime('%H:%M', end_time) AS end_time FROM time_entries, tasks"
+                "SELECT time_entries._id, title, comment, strftime('%H:%M', start_time) AS start_time,"
+                + " strftime('%H:%M', ifnull(end_time, datetime('now', 'localtime'))) AS end_time,"
+                + " round((strftime('%s', ifnull(end_time, datetime('now', 'localtime'))) - strftime('%s', start_time)) / 3600.0, 2) AS duration"
+                + " FROM time_entries, tasks"
                 + " WHERE tasks._id = time_entries.task_id AND date(start_time) = ? ORDER BY start_time ASC", 
                 new String[] {start_date}
         );
@@ -265,7 +271,7 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(
                 "SELECT time_entries._id AS _id, title, billable, comment, strftime('%w', start_time) AS day,"
                 + " date(start_time) AS start_date,"
-                + " sum((strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0) AS duration"
+                + " sum((strftime('%s', ifnull(end_time, datetime('now', 'localtime'))) - strftime('%s', start_time)) / 3600.0) AS duration"
                 + " FROM time_entries, tasks"
                 + " WHERE tasks._id = time_entries.task_id"
                 + " AND date(start_time) >= ?"
@@ -367,7 +373,7 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(
                 "SELECT title, billable, comment, start_time, end_time,"
-                + " (strftime('%s', end_time) - strftime('%s', start_time)) / 3600.0 AS duration"
+                + " (strftime('%s', ifnull(end_time, datetime('now', 'localtime'))) - strftime('%s', start_time)) / 3600.0 AS duration"
                 + " FROM time_entries, tasks"
                 + " WHERE tasks._id = time_entries.task_id"
                 + " AND date(start_time) >= ?"
