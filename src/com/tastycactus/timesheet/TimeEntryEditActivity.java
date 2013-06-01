@@ -21,8 +21,10 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -167,6 +169,7 @@ public class TimeEntryEditActivity extends Activity {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
 
         m_db = new TimesheetDatabase(this);
 
@@ -180,7 +183,7 @@ public class TimeEntryEditActivity extends Activity {
             m_data = new TimeEntryData();
         }
 
-        Cursor task_cursor = m_db.getTasks();
+        Cursor task_cursor = m_db.getTasks(prefs.getBoolean("alphabetise_tasks", true));
 
         setContentView(R.layout.time_entry_edit);
 

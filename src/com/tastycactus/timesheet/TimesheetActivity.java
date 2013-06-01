@@ -56,9 +56,10 @@ public class TimesheetActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
 
         m_db = new TimesheetDatabase(this);
-        m_task_cursor = m_db.getTasks();
+        m_task_cursor = m_db.getTasks(prefs.getBoolean("alphabetise_tasks", true));
         startManagingCursor(m_task_cursor);
 
         setContentView(R.layout.main);
@@ -80,7 +81,9 @@ public class TimesheetActivity extends ListActivity {
         registerForContextMenu(getListView());
 
         // Set preference defaults if they haven't been set
-        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
+        if (!prefs.contains("alphabetise_tasks")) {
+            prefs.edit().putBoolean("alphabetise_tasks", true);
+        }
         if (!prefs.contains("weekly_billable_only")) {
             prefs.edit().putBoolean("weekly_billable_only", true);
         }

@@ -92,15 +92,22 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public Cursor getTasks() {
+    public Cursor getTasks(boolean alphabetiseTasks) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.query("tasks", new String[] {"_id", "title", "billable"}, "hidden != 1", null, null, null, "billable DESC, _id ASC");
+
+        // alphabetise_tasks
+        String sortString = "billable DESC, _id ASC";
+        if (alphabetiseTasks == true) {
+            sortString = "billable DESC, title ASC";
+        }
+
+        Cursor c = db.query("tasks", new String[] {"_id", "title", "billable"}, "hidden != 1", null, null, null, sortString);
         c.moveToFirst();
         return c;
     }
 
     public long getFirstTaskId() {
-        Cursor c = getTasks();
+        Cursor c = getTasks(false);
         if (c.getCount() > 0) {
             return c.getLong(0);
         } else {

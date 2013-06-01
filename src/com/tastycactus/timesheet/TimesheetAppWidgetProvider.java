@@ -186,7 +186,7 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
         public void onHandleIntent(Intent intent) {
             long task_id = m_prefs.getLong("app_task", -1);
             long next_task_id = -1;
-            Cursor c = m_db.getTasks();
+            Cursor c = m_db.getTasks(m_prefs.getBoolean("alphabetise_tasks", true));
             while (!c.isAfterLast()) {
                 long c_task_id = c.getLong(c.getColumnIndex("_id"));
                 if (c_task_id == task_id) {
