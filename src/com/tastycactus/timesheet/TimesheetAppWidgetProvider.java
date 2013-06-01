@@ -90,7 +90,7 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
             // task_id could be an id that has since been deleted
             if (task_id == -1 || !m_db.isValidTask(task_id)) {
                 if (current_id == 0) {
-                    task_id = m_db.getFirstTaskId();
+                    task_id = m_db.getFirstTaskId(m_prefs.getBoolean("alphabetise_tasks", true));
                 } else {
                     task_id = current_id;
                 }
