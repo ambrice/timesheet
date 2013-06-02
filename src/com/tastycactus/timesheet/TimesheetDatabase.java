@@ -106,8 +106,8 @@ public class TimesheetDatabase extends SQLiteOpenHelper {
         return c;
     }
 
-    public long getFirstTaskId() {
-        Cursor c = getTasks(false);
+    public long getFirstTaskId(boolean alphabetise_tasks) {
+        Cursor c = getTasks(alphabetise_tasks);
         if (c.getCount() > 0) {
             return c.getLong(0);
         } else {
