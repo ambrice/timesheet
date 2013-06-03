@@ -8,6 +8,12 @@
         android:entryValues="@array/days_index"
         android:dialogTitle="Week starts on" />
     <CheckBoxPreference
+        android:key="alphabetise_tasks"
+        android:title="List Tasks Alphabetically"
+        android:summaryOff="Tasks are listed in the order you created them, with billables first (requires restart)"
+        android:summaryOn="Tasks are listed alphabetically, with billables first (requires restart)"
+        android:defaultValue="true"/>
+    <CheckBoxPreference
         android:key="weekly_billable_only"
         android:title="Show Only Billable Tasks"
         android:summaryOff="All tasks are shown in the weekly view and exported to CSV"

@@ -90,7 +90,7 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
             // task_id could be an id that has since been deleted
             if (task_id == -1 || !m_db.isValidTask(task_id)) {
                 if (current_id == 0) {
-                    task_id = m_db.getFirstTaskId();
+                    task_id = m_db.getFirstTaskId(m_prefs.getBoolean("alphabetise_tasks", true));
                 } else {
                     task_id = current_id;
                 }
@@ -186,7 +186,7 @@ public class TimesheetAppWidgetProvider extends AppWidgetProvider
         public void onHandleIntent(Intent intent) {
             long task_id = m_prefs.getLong("app_task", -1);
             long next_task_id = -1;
-            Cursor c = m_db.getTasks();
+            Cursor c = m_db.getTasks(m_prefs.getBoolean("alphabetise_tasks", true));
             while (!c.isAfterLast()) {
                 long c_task_id = c.getLong(c.getColumnIndex("_id"));
                 if (c_task_id == task_id) {
