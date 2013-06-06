@@ -183,7 +183,7 @@ public class TimeEntryEditActivity extends Activity {
             m_data = new TimeEntryData();
         }
 
-        Cursor task_cursor = m_db.getTasks(prefs.getBoolean("alphabetise_tasks", true));
+        Cursor task_cursor = m_db.getTasks(prefs.getBoolean("alphabetise_tasks", false));
 
         setContentView(R.layout.time_entry_edit);
 

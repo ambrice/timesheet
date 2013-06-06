@@ -12,7 +12,7 @@
         android:title="List Tasks Alphabetically"
         android:summaryOff="Tasks are listed in the order you created them, with billables first (requires restart)"
         android:summaryOn="Tasks are listed alphabetically, with billables first (requires restart)"
-        android:defaultValue="true"/>
+        android:defaultValue="false"/>
     <CheckBoxPreference
         android:key="weekly_billable_only"
         android:title="Show Only Billable Tasks"
