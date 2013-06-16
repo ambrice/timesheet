@@ -123,6 +123,7 @@ public class TimesheetActivity extends ListActivity {
         if (id == m_db.getCurrentTaskId()) {
             m_db.completeCurrentTask();
             getListView().clearChoices();
+            getListView().requestLayout();
         } else {
             m_db.changeTask(id);
         }
