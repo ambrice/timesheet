@@ -237,6 +237,17 @@ public class TimeEntriesActivity extends TabActivity
     }
 
     @Override
+    public void onResume()
+    {
+        super.onResume();
+        m_day_cursor.requery();
+        m_day_ca.notifyDataSetChanged();
+        m_week_data.requery();
+        m_merge_adapter.notifyDataSetChanged();
+        m_totals_adapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void onDestroy()
     {
         m_day_cursor.close();
